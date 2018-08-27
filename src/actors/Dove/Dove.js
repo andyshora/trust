@@ -16,6 +16,7 @@ import {
 import OrbitControls from '../../controls/OrbitControls'
 
 class Dove extends Component {
+  _group = null
   _scene = null
   _renderer = null
   _camera = null
@@ -90,7 +91,9 @@ class Dove extends Component {
     cube.position.x = this._width / 2
     cube.position.y = this._height / 2
     cube.position.z = 0
-    this._scene.add(cube)
+    this._group = new Group()
+    this._group.add(cube)
+    this._scene.add(this._group)
   }
   _render() {
     this._controls.update()

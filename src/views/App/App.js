@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import ContainerDimensions from 'react-container-dimensions';
+import ContainerDimensions from 'react-container-dimensions'
 import keydown, { ALL_KEYS } from 'react-keydown'
 
 
@@ -13,7 +13,7 @@ import {
   NavWrapper
 } from './App.styles'
 
-const NUM_INTRO_STAGES = 3;
+const NUM_INTRO_STAGES = 3
 
 class App extends Component {
   constructor(props) {
@@ -27,23 +27,23 @@ class App extends Component {
   nextStage() {
     const { stage } = this.state
     if (stage === NUM_INTRO_STAGES - 1) {
-      return;
+      return
     }
     this.setState({
       stage: stage + 1,
       prevStage: stage
-    });
+    })
   }
   @keydown('left')
   prevStage() {
     const { stage } = this.state
     if (!stage) {
-      return;
+      return
     }
     this.setState({
       stage: stage - 1,
       prevStage: stage
-    });
+    })
   }
   _handleButtonClick = () => {
     const { stage } = this.state
@@ -51,7 +51,7 @@ class App extends Component {
     this.setState({
       stage: nextStage,
       prevStage: stage
-    });
+    })
   }
   render() {
     const {
