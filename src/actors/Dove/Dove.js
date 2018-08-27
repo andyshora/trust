@@ -2,6 +2,10 @@ import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 
 import {
+  BoxGeometry,
+  Group,
+  Mesh,
+  MeshBasicMaterial,
   OrthographicCamera,
   PointLight,
   Scene,
@@ -43,6 +47,7 @@ class Dove extends Component {
     this._camera.aspect = this._width / this._height
     this._camera.updateProjectionMatrix()
     this._renderer.setSize(this._width, this._height)
+    this._render()
   }
   _setupSceneAndCamera() {
     this._scene = new Scene()
@@ -56,7 +61,8 @@ class Dove extends Component {
     )
     this._camera.position.set(
       this._width / 2,
-      this._height / 2, 100
+      this._height / 2,
+      100
     )
     this._controls = new OrbitControls(this._camera, {
       element: this._renderer.domElement,
@@ -76,7 +82,15 @@ class Dove extends Component {
     backLight.position.x = -20
   }
   _setupObjects() {
+    /* Actual content of the this.scene */
+    const geometry = new BoxGeometry(100, 100, 100)
+    const material = new MeshBasicMaterial({ color: 0x00ff00 })
+    const cube = new Mesh(geometry, material)
 
+    cube.position.x = this._width / 2
+    cube.position.y = this._height / 2
+    cube.position.z = 0
+    this._scene.add(cube)
   }
   _render() {
     this._controls.update()
