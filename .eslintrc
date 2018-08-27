@@ -1,0 +1,61 @@
+{
+  "plugins": [
+    "import",
+    "react",
+    "babel"
+  ],
+  "extends": "react-app",
+  "settings": {
+    "react": {
+      "pragma": "React",
+      "version": "16.4"
+    }
+  },
+  "parser": "babel-eslint",
+  "rules": {
+    "babel/new-cap": 1,
+    "babel/no-invalid-this": 1,
+    "semi": ["warn", "never"],
+    "arrow-parens": ["error", "as-needed"],
+    "comma-dangle": ["error", "never"],
+    "consistent-return": "off",
+    "indent": ["error", 2, {"SwitchCase": 1}],
+    "jsx-quotes": ["error", "prefer-single"],
+    "max-len": ["error", 120],
+    "newline-per-chained-call": ["error", { "ignoreChainWithDepth": 3 }],
+    "no-inline-comments": ["error"],
+    "no-plusplus": "off",
+    "no-bitwise": "off",
+    "no-confusing-arrow": "off",
+    "no-underscore-dangle": "off",
+    "no-else-return": "off",
+    "operator-linebreak": ["warn", "before"],
+    "react/jsx-boolean-value": ["off"],
+    "react/jsx-closing-bracket-location": [2, { "selfClosing": "after-props", "nonEmpty": "after-props" }],
+    "react/jsx-filename-extension": [ 1, { "extensions": [".js", ".jsx"] } ],
+    "react/forbid-prop-types": "off",
+    "react/prefer-stateless-function": "off",
+    "react/prefer-es6-class": ["error", "always"]
+  },
+  "globals": {
+    "hot": true,
+    "cold": true,
+    "__DEV__": false,
+    "describe": true,
+    "it": true,
+    "documentRef": true
+  },
+  "env": {
+    "browser": true,
+    "node": true,
+    "es6": true
+  },
+  "parserOptions": {
+    "sourceType": "module",
+    "ecmaFeatures": {
+      "modules": true,
+      "experimentalObjectRestSpread": true,
+      "jsx": true
+    }
+  }
+}
