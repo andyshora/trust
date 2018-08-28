@@ -9,7 +9,7 @@ const transitionOut = keyframes`
   100% {
     opacity: 0;
   }
-`;
+`
 
 export const ActorIntroWrapper = styled.div`
 `
@@ -26,7 +26,8 @@ const ActorIntroSection = styled.section`
   height: 100%;
   padding: 1rem;
   border: 1px solid lightBlue;
-`;
+`
+
 export const ActorSpin = ActorIntroSection.extend`
   background: red;
   display: ${props => props.active || props.transitionOut ? 'grid' : 'none'};

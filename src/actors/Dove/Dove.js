@@ -1,7 +1,9 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
+import loop from 'raf-loop'
 
 import {
+  Box3,
   BoxGeometry,
   Group,
   Mesh,
@@ -9,14 +11,11 @@ import {
   OrthographicCamera,
   PointLight,
   Scene,
-  Vector3,
   WebGLRenderer
 } from 'three'
 
-import OrbitControls from '../../controls/OrbitControls'
-
 class Dove extends Component {
-  _angle = 0
+  _animationEngine = null
   _cube = null
   _group = null
   _scene = null
@@ -24,12 +23,17 @@ class Dove extends Component {
   _camera = null
   _width = null
   _height = null
+  _rotationSpeed = 0.005
   constructor(props) {
     super(props)
     this._container = React.createRef()
   }
   componentDidMount() {
-    const { height, width } = this.props
+    const {
+      autoStartAnimation,
+      height,
+      width
+    } = this.props
     if (this._container) {
       this._width = width
       this._height = height
@@ -42,6 +46,24 @@ class Dove extends Component {
       this._setupObjects()
 
       this.resize({ width, height })
+
+      if (autoStartAnimation && this._container.current) {
+        this.startAnimation()
+      }
+    }
+  }
+  startAnimation() {
+    if (this._animationEngine
+      && !this._animationEngine.running
+      && this._container.current) {
+      this._animationEngine.start()
+    }
+  }
+  stopAnimation() {
+    if (this._animationEngine
+      && this._animationEngine.running
+      && this._container.current) {
+      this._animationEngine.stop()
     }
   }
   resize({ width, height }) {
@@ -50,7 +72,7 @@ class Dove extends Component {
     this._camera.aspect = this._width / this._height
     this._camera.updateProjectionMatrix()
     this._renderer.setSize(this._width, this._height)
-    this._render()
+    this._renderScene()
   }
   _setupSceneAndCamera() {
     this._scene = new Scene()
@@ -62,20 +84,12 @@ class Dove extends Component {
       1,
       1000
     )
+
     this._camera.position.set(
       this._width / 2,
       this._height / 2,
       100
     )
-    this._controls = new OrbitControls(this._camera, {
-      autoRotate: true,
-      element: this._renderer.domElement,
-      parent: this._renderer.domElement,
-      distance: 500,
-      enableRotate: true,
-      enableZoom: true,
-      target: new Vector3(this._width / 2, this._height / 2, 0)
-    })
 
     /* Lights */
     const frontLight = new PointLight(0xFFFFFF, 1)
@@ -84,26 +98,31 @@ class Dove extends Component {
     this._scene.add(backLight)
     frontLight.position.x = 20
     backLight.position.x = -20
+
+    this._animationEngine = loop(this._renderScene)
   }
   _setupObjects() {
     /* Actual content of the this.scene */
     const geometry = new BoxGeometry(100, 100, 100)
-    const material = new MeshBasicMaterial({ color: 0xffff00, wireframe: true })
+    const material = new MeshBasicMaterial({ color: 0xFF00FF, wireframe: true })
     this._cube = new Mesh(geometry, material)
 
-    this._cube.position.x = this._width / 2
-    this._cube.position.y = this._height / 2
-    this._cube.position.z = 0
-    // this._cube.rotation.x = 15 * Math.PI / 180
-    this._cube.rotation.y = 45 * Math.PI / 180
-    this._cube.rotation.z = 45 * Math.PI / 180
-    this._group = new Group()
-    this._group.add(this._cube)
-    this._scene.add(this._group)
+    // reset mesh to center of scene
+    const boundingBox = new Box3().setFromObject(this._cube)
+    boundingBox.center(this._cube.position)
+    this._cube.position.multiplyScalar(-1)
+
+    this._pivot = new Group()
+    this._scene.add(this._pivot)
+    this._pivot.add(this._cube)
+
+    // position group in the center of the scene
+    this._pivot.position.set(this._width / 2, this._height / 2, 0)
+    this._pivot.rotation.set(20 * Math.PI / 180, 0, 0)
   }
-  _render() {
-    this._angle += 1
-    this._controls.update()
+  _renderScene = dt => {
+    this._pivot.rotation.y += this._rotationSpeed
+    this._camera.updateProjectionMatrix()
     this._renderer.render(this._scene, this._camera)
   }
   /**
@@ -119,6 +138,16 @@ class Dove extends Component {
     }
     return <div ref={this._container} style={containerStyles} />
   }
+}
+
+Dove.propTypes = {
+  autoStartAnimation: PropTypes.bool,
+  height: PropTypes.number.isRequired,
+  width: PropTypes.number.isRequired
+}
+
+Dove.defaultProps = {
+  autoStartAnimation: true
 }
 
 export default Dove

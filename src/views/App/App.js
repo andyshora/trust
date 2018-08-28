@@ -1,7 +1,6 @@
 import React, { Component } from 'react'
 import ContainerDimensions from 'react-container-dimensions'
-import keydown, { ALL_KEYS } from 'react-keydown'
-
+import keydown from 'react-keydown'
 
 // Components
 import ActorIntro from '../ActorIntro'
