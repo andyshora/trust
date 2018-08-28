@@ -3,6 +3,7 @@ import PropTypes from 'prop-types'
 import loop from 'raf-loop'
 
 import {
+  AmbientLight,
   Box3,
   BoxGeometry,
   Group,
@@ -39,7 +40,7 @@ class Dove extends Component {
       this._height = height
 
       this._renderer = new WebGLRenderer({ antialias: true })
-      this._renderer.setClearColor(0x000000)
+      this._renderer.setClearColor(0x666666)
       this._container.current.appendChild(this._renderer.domElement)
 
       this._setupSceneAndCamera()
@@ -99,29 +100,90 @@ class Dove extends Component {
     frontLight.position.x = 20
     backLight.position.x = -20
 
+    const light = new AmbientLight(0x404040)
+    this._scene.add(light)
+
     this._animationEngine = loop(this._renderScene)
   }
   _setupObjects() {
-    /* Actual content of the this.scene */
-    const geometry = new BoxGeometry(100, 100, 100)
-    const material = new MeshBasicMaterial({ color: 0xFF00FF, wireframe: true })
-    this._cube = new Mesh(geometry, material)
+    const { behaviour } = this.props
+    switch (behaviour) {
+      case 'spinning': {
+        const geometry = new BoxGeometry(100, 100, 100)
+        const material = new MeshBasicMaterial({ color: 0xFF00FF, wireframe: false })
+        this._cube = new Mesh(geometry, material)
 
-    // reset mesh to center of scene
-    const boundingBox = new Box3().setFromObject(this._cube)
-    boundingBox.center(this._cube.position)
-    this._cube.position.multiplyScalar(-1)
+        // reset mesh to center of scene
+        const boundingBox = new Box3().setFromObject(this._cube)
+        boundingBox.center(this._cube.position)
+        this._cube.position.multiplyScalar(-1)
 
-    this._pivot = new Group()
-    this._scene.add(this._pivot)
-    this._pivot.add(this._cube)
+        this._pivot = new Group()
+        this._scene.add(this._pivot)
+        this._pivot.add(this._cube)
 
-    // position group in the center of the scene
-    this._pivot.position.set(this._width / 2, this._height / 2, 0)
-    this._pivot.rotation.set(20 * Math.PI / 180, 0, 0)
+        // position group in the center of the scene
+        this._pivot.position.set(this._width / 2, this._height / 2, 0)
+        this._pivot.rotation.set(15 * Math.PI / 180, 0, 0)
+        break
+      }
+      case 'flying': {
+        const geometry = new BoxGeometry(100, 100, 100)
+        const material = new MeshBasicMaterial({ color: 0xFF00FF, wireframe: false })
+        this._cube = new Mesh(geometry, material)
+
+        // reset mesh to center of scene
+        const boundingBox = new Box3().setFromObject(this._cube)
+        boundingBox.center(this._cube.position)
+        this._cube.position.multiplyScalar(-1)
+
+        this._pivot = new Group()
+        this._scene.add(this._pivot)
+        this._pivot.add(this._cube)
+
+        // position group in the center of the scene
+        this._pivot.position.set(this._width / 2, this._height / 2, 0)
+        this._pivot.rotation.set(15 * Math.PI / 180, 0, 0)
+        break
+      }
+      case 'meeting': {
+        const geometry = new BoxGeometry(100, 100, 100)
+        const material = new MeshBasicMaterial({ color: 0xFF00FF, wireframe: false })
+        this._cubes = [
+          new Mesh(geometry, material),
+          new Mesh(geometry, material)
+        ]
+
+        this._scene.add(this._cubes[0])
+        this._scene.add(this._cubes[1])
+
+        // position group in the center of the scene
+        this._cubes[0].position.set(this._width * 0.1, this._height / 2, 0)
+        this._cubes[0].rotation.set(15 * Math.PI / 180, 0, 0)
+
+        this._cubes[1].position.set(this._width * 0.9, this._height / 2, 0)
+        this._cubes[1].rotation.set(15 * Math.PI / 180, 0, 0)
+        break
+      }
+      default:
+        break
+    }
   }
   _renderScene = dt => {
-    this._pivot.rotation.y += this._rotationSpeed
+    const { behaviour } = this.props
+    switch (behaviour) {
+      case 'spinning':
+        this._pivot.rotation.y += this._rotationSpeed
+        break
+      case 'flying':
+        this._pivot.rotation.y += this._rotationSpeed / 2
+        break
+      case 'meeting':
+        break
+      default:
+        break
+    }
+
     this._camera.updateProjectionMatrix()
     this._renderer.render(this._scene, this._camera)
   }

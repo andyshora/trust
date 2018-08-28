@@ -34,35 +34,16 @@ const _getActorDims = ({ height, stage, width }) => {
     case 0:
       return { width: width * 0.5, height: width * 0.5 * 0.6 }
     case 1:
-      return { width: width * 0.3, height: width * 0.3 * 0.6 }
+      return { width: width * 0.5, height: width * 0.5 * 0.6 }
     case 2:
-      return { width: width * 0.8, height: width * 0.6 }
+      return { width: width * 0.8, height: width * 0.8 * 0.3 }
     default:
       return
   }
 }
 
 class ActorIntro extends Component {
-  constructor(props) {
-    super(props)
-    this._actor = React.createRef()
-
-    this._animationEngine = null
-  }
-  componentDidUpdate() {
-    // if (!this._actor.current) {
-    //   console.error('No actor to animate. Stopping.')
-    //   this._actor.current.stopAnimation()
-    // }
-  }
-  componentDidMount() {
-
-    // if (this._actor.current) {
-    //   this._actor.current.startAnimation()
-    // } else {
-    //   console.error('No actor to animate. Stopping.')
-    // }
-  }
+  _actor = React.createRef()
   render() {
     const {
       height,
@@ -90,15 +71,24 @@ class ActorIntro extends Component {
       <ActorIntroWrapper>
         <ActorSectionsWrapper height={height} width={width}>
           <ActorSpin active={!stage} transitionOut={!prevStage}>
-            <h1>.</h1>
-            {actorComponent}
+            <hgroup>
+              <h1>Heading 1</h1>
+            </hgroup>
+            <aside>Lorem ipsum sudor sit amet.</aside>
+            {!stage && actorComponent}
           </ActorSpin>
           <ActorDescription active={stage === 1} transitionOut={prevStage === 1}>
-            <h1>...</h1>
+            <hgroup>
+              <h1>Heading 2</h1>
+            </hgroup>
+            <aside>Lorem ipsum sudor sit amet.</aside>
             {stage === 1 && actorComponent}
           </ActorDescription>
           <ActorMeets active={stage === 2} transitionOut={prevStage === 2}>
-            <h1>...</h1>
+            <hgroup>
+              <h1>Heading 3</h1>
+            </hgroup>
+            <aside>Lorem ipsum sudor sit amet.</aside>
             {stage === 2 && actorComponent}
           </ActorMeets>
         </ActorSectionsWrapper>

@@ -1,5 +1,4 @@
 import styledNormalize from 'styled-normalize'
-import { theme } from '../styles/theme'
 
 export const baseStyles = `
 ${styledNormalize}
@@ -16,13 +15,13 @@ html {
   font-family: Lato, sans-serif;
 }
 body {
-  color: $color-d1;
+  color: white;
+  background: black;
   font-family: Lato, sans-serif;
   min-width: 375px;
   line-height: 1;
   font-size: 1.4rem;
   font-weight: 300;
-  color: ${theme.colors.d1};
   overflow-x: hidden;
 }
 h1, h2, h3, h4, h5 {
@@ -36,7 +35,6 @@ p {
   margin: 1rem 0;
 }
 a {
-  color: ${theme.colors.p1};
 }
 h1 {
   font-size: 4.6rem;
