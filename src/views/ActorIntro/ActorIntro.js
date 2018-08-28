@@ -50,7 +50,7 @@ class ActorIntro extends Component {
   }
   componentDidUpdate() {
     if (!this._actor.current) {
-      console.warn('No actor to animate. Stopping.')
+      console.error('No actor to animate. Stopping.')
       this._animationEngine.stop()
     }
   }
@@ -58,13 +58,15 @@ class ActorIntro extends Component {
     this._animationEngine = loop(this._animationLoop.bind(this))
     if (this._actor.current) {
       this._animationEngine.start()
+    } else {
+      console.error('No actor to animate. Stopping.')
     }
   }
   _animationLoop = () => {
     if (this._actor.current && typeof this._actor.current._render === 'function') {
       this._actor.current._render()
     } else {
-      console.warn('No actor to animate. Stopping.')
+      console.error('No actor to animate. Stopping.')
       this._animationEngine.stop()
     }
   }

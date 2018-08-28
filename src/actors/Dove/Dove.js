@@ -16,6 +16,8 @@ import {
 import OrbitControls from '../../controls/OrbitControls'
 
 class Dove extends Component {
+  _angle = 0
+  _cube = null
   _group = null
   _scene = null
   _renderer = null
@@ -66,10 +68,11 @@ class Dove extends Component {
       100
     )
     this._controls = new OrbitControls(this._camera, {
+      autoRotate: true,
       element: this._renderer.domElement,
       parent: this._renderer.domElement,
       distance: 500,
-      enableRotate: false,
+      enableRotate: true,
       enableZoom: true,
       target: new Vector3(this._width / 2, this._height / 2, 0)
     })
@@ -85,17 +88,21 @@ class Dove extends Component {
   _setupObjects() {
     /* Actual content of the this.scene */
     const geometry = new BoxGeometry(100, 100, 100)
-    const material = new MeshBasicMaterial({ color: 0x00ff00 })
-    const cube = new Mesh(geometry, material)
+    const material = new MeshBasicMaterial({ color: 0xffff00, wireframe: true })
+    this._cube = new Mesh(geometry, material)
 
-    cube.position.x = this._width / 2
-    cube.position.y = this._height / 2
-    cube.position.z = 0
+    this._cube.position.x = this._width / 2
+    this._cube.position.y = this._height / 2
+    this._cube.position.z = 0
+    // this._cube.rotation.x = 15 * Math.PI / 180
+    this._cube.rotation.y = 45 * Math.PI / 180
+    this._cube.rotation.z = 45 * Math.PI / 180
     this._group = new Group()
-    this._group.add(cube)
+    this._group.add(this._cube)
     this._scene.add(this._group)
   }
   _render() {
+    this._angle += 1
     this._controls.update()
     this._renderer.render(this._scene, this._camera)
   }
