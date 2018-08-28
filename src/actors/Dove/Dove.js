@@ -3,22 +3,39 @@ import PropTypes from 'prop-types'
 import loop from 'raf-loop'
 
 import {
-  AmbientLight,
-  Box3,
+  // AmbientLight,
+  AxesHelper,
+  // Box3,
   BoxGeometry,
+  DirectionalLight,
+  DirectionalLightHelper,
   Group,
   Mesh,
-  MeshBasicMaterial,
-  OrthographicCamera,
-  PointLight,
+  MeshStandardMaterial,
+  Object3D,
+  // OrthographicCamera,
+  PerspectiveCamera,
+  // PointLight,
+  // PointLightHelper,
   Scene,
+  SphereGeometry,
+  // SpotLight,
+  // SpotLightHelper,
+  Vector3,
   WebGLRenderer
 } from 'three'
 
+import OrbitControls from 'threejs-orbit-controls'
+
+const DEBUG = false
+const DEBUG_LIGHTS = false
+
 class Dove extends Component {
   _animationEngine = null
+  _controls = null
   _cube = null
   _group = null
+  _lightTarget = null
   _scene = null
   _renderer = null
   _camera = null
@@ -40,7 +57,8 @@ class Dove extends Component {
       this._height = height
 
       this._renderer = new WebGLRenderer({ antialias: true })
-      this._renderer.setClearColor(0x666666)
+      this._renderer.setPixelRatio(window.devicePixelRatio)
+      this._renderer.setClearColor(0x000000)
       this._container.current.appendChild(this._renderer.domElement)
 
       this._setupSceneAndCamera()
@@ -77,31 +95,51 @@ class Dove extends Component {
   }
   _setupSceneAndCamera() {
     this._scene = new Scene()
-    this._camera = new OrthographicCamera(
-      this._width / - 2,
-      this._width / 2,
-      this._height / 2,
-      this._height / - 2,
-      1,
-      1000
-    )
+    this._camera = new PerspectiveCamera(45, this._width / this._height, 1, 20000)
+    this._camera.position.set(0, 100, 500)
 
-    this._camera.position.set(
-      this._width / 2,
-      this._height / 2,
-      100
-    )
+    this._controls = new OrbitControls(this._camera, this._renderer.domElement)
+    this._controls.maxDistance = 20000
+    this._controls.minDistance = 200
+    this._controls.enablePan = false
+    this._controls.autoRotate = true
+    this._controls.target = new Vector3(0, 0, 0)
 
-    /* Lights */
-    const frontLight = new PointLight(0xFFFFFF, 1)
-    const backLight = new PointLight(0xFFFFFF, 0.5)
-    this._scene.add(frontLight)
-    this._scene.add(backLight)
-    frontLight.position.x = 20
-    backLight.position.x = -20
+    if (DEBUG) {
+      const axesHelper = new AxesHelper(500)
+      this._scene.add(axesHelper)
+    }
 
-    const light = new AmbientLight(0x404040)
-    this._scene.add(light)
+    const lightTarget = new Object3D()
+    lightTarget.position.set(0, 0, 0)
+    this._scene.add(lightTarget)
+
+    const lights = [
+      new DirectionalLight(0xffffff, 1),
+      new DirectionalLight(0xffffff, 0.8),
+      new DirectionalLight(0xffffff, 0.5),
+      new DirectionalLight(0xffffff, 0.8),
+      new DirectionalLight(0xffffff, 0.8),
+      new DirectionalLight(0xffffff, 0.5)
+    ]
+
+    const radius = 2000
+    lights[0].position.set(0, radius * 0.5, 0)
+    lights[1].position.set(radius * 0.5, 0, 0)
+    lights[2].position.set(0, 0, radius * -0.5)
+    lights[3].position.set(0, radius * -0.5, 0)
+    lights[4].position.set(radius * -0.5, 0, 0)
+    lights[5].position.set(0, 0, radius * 0.5)
+
+    lights.forEach(l => {
+      l.target = lightTarget
+      l.distance = 9000
+      this._scene.add(l)
+    })
+
+    if (DEBUG_LIGHTS) {
+      lights.forEach(l => this._scene.add(new DirectionalLightHelper(l)))
+    }
 
     this._animationEngine = loop(this._renderScene)
   }
@@ -110,59 +148,97 @@ class Dove extends Component {
     switch (behaviour) {
       case 'spinning': {
         const geometry = new BoxGeometry(100, 100, 100)
-        const material = new MeshBasicMaterial({ color: 0xFF00FF, wireframe: false })
-        this._cube = new Mesh(geometry, material)
+        const material = new MeshStandardMaterial({ color: 0xFF00FF, wireframe: DEBUG, roughness: 0.18, metalness: 0.5 })
+        const cube = new Mesh(geometry, material)
 
-        // reset mesh to center of scene
-        const boundingBox = new Box3().setFromObject(this._cube)
-        boundingBox.center(this._cube.position)
-        this._cube.position.multiplyScalar(-1)
+        const sphereGeometry = new SphereGeometry(100, 32, 32)
+        const sphereMaterial = new MeshStandardMaterial({
+          color: 0x666666,
+          wireframe: true,
+          opacity: 0.4,
+          transparent: true,
+          roughness: 0.5,
+          metalness: 0.1
+        })
+        const sphere = new Mesh(sphereGeometry, sphereMaterial)
 
-        this._pivot = new Group()
-        this._scene.add(this._pivot)
-        this._pivot.add(this._cube)
+        this._objectGroup = new Group()
+        this._scene.add(this._objectGroup)
+        this._objectGroup.add(cube)
+        this._objectGroup.add(sphere)
 
         // position group in the center of the scene
-        this._pivot.position.set(this._width / 2, this._height / 2, 0)
-        this._pivot.rotation.set(15 * Math.PI / 180, 0, 0)
+        this._objectGroup.position.set(0, 0, 0)
         break
       }
       case 'flying': {
         const geometry = new BoxGeometry(100, 100, 100)
-        const material = new MeshBasicMaterial({ color: 0xFF00FF, wireframe: false })
-        this._cube = new Mesh(geometry, material)
+        const material = new MeshStandardMaterial({ color: 0xFF00FF, wireframe: DEBUG, roughness: 0.18, metalness: 0.5 })
+        const cube = new Mesh(geometry, material)
 
-        // reset mesh to center of scene
-        const boundingBox = new Box3().setFromObject(this._cube)
-        boundingBox.center(this._cube.position)
-        this._cube.position.multiplyScalar(-1)
+        const sphereGeometry = new SphereGeometry(100, 32, 32)
+        const sphereMaterial = new MeshStandardMaterial({
+          color: 0x666666,
+          wireframe: true,
+          opacity: 0.4,
+          transparent: true,
+          roughness: 0.5,
+          metalness: 0.1
+        })
+        const sphere = new Mesh(sphereGeometry, sphereMaterial)
 
-        this._pivot = new Group()
-        this._scene.add(this._pivot)
-        this._pivot.add(this._cube)
+        this._objectGroup = new Group()
+        this._scene.add(this._objectGroup)
+        this._objectGroup.add(cube)
+        this._objectGroup.add(sphere)
 
         // position group in the center of the scene
-        this._pivot.position.set(this._width / 2, this._height / 2, 0)
-        this._pivot.rotation.set(15 * Math.PI / 180, 0, 0)
+        this._objectGroup.position.set(0, 0, 0)
         break
       }
       case 'meeting': {
         const geometry = new BoxGeometry(100, 100, 100)
-        const material = new MeshBasicMaterial({ color: 0xFF00FF, wireframe: false })
-        this._cubes = [
+        const material = new MeshStandardMaterial({ color: 0xFF00FF, wireframe: DEBUG, roughness: 0.18, metalness: 0.5 })
+        const cubes = [
           new Mesh(geometry, material),
           new Mesh(geometry, material)
         ]
 
-        this._scene.add(this._cubes[0])
-        this._scene.add(this._cubes[1])
+        const sphereGeometry = new SphereGeometry(100, 32, 32)
+        const sphereMaterial = new MeshStandardMaterial({
+          color: 0x666666,
+          wireframe: true,
+          opacity: 0.4,
+          transparent: true,
+          roughness: 0.5,
+          metalness: 0.1
+        })
+
+        const spheres = [
+          new Mesh(sphereGeometry, sphereMaterial),
+          new Mesh(sphereGeometry, sphereMaterial)
+        ]
+
+        this._objectGroup = new Group()
+
+        this._actorGroups = [
+          new Group(),
+          new Group()
+        ]
+
+        this._actorGroups[0].add(cubes[0])
+        this._actorGroups[0].add(spheres[0])
+        this._actorGroups[0].position.set(-500, 0, 0)
+
+        this._actorGroups[1].add(cubes[1])
+        this._actorGroups[1].add(spheres[1])
+        this._actorGroups[1].position.set(500, 0, 0)
+
+        this._actorGroups.forEach(g => this._objectGroup.add(g))
+        this._scene.add(this._objectGroup)
 
         // position group in the center of the scene
-        this._cubes[0].position.set(this._width * 0.1, this._height / 2, 0)
-        this._cubes[0].rotation.set(15 * Math.PI / 180, 0, 0)
-
-        this._cubes[1].position.set(this._width * 0.9, this._height / 2, 0)
-        this._cubes[1].rotation.set(15 * Math.PI / 180, 0, 0)
+        this._objectGroup.position.set(0, 0, 0)
         break
       }
       default:
@@ -173,10 +249,10 @@ class Dove extends Component {
     const { behaviour } = this.props
     switch (behaviour) {
       case 'spinning':
-        this._pivot.rotation.y += this._rotationSpeed
+        // this._objectGroup.rotation.y += this._rotationSpeed
         break
       case 'flying':
-        this._pivot.rotation.y += this._rotationSpeed / 2
+        this._objectGroup.rotation.y += this._rotationSpeed / 2
         break
       case 'meeting':
         break
@@ -184,6 +260,7 @@ class Dove extends Component {
         break
     }
 
+    this._controls.update()
     this._camera.updateProjectionMatrix()
     this._renderer.render(this._scene, this._camera)
   }
