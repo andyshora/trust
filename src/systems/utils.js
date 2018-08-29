@@ -74,7 +74,6 @@ export const addPoint = ({
   size = 50,
   position = [0, 0, 0]
 }) => {
-  console.log('addPoint', color, size, position)
   if (!geometry) {
     return console.error('No geometry supplied')
   }

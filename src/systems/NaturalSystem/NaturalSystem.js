@@ -35,11 +35,11 @@ import Sensor from '../objects/Sensor'
 import System from '../objects/System'
 import Walker from '../objects/Walker'
 
-const DEBUG = true
+const DEBUG = false
 const DEBUG_LIGHTS = false
 
 const NUM_HAWKS = 0
-const NUM_DOVES = 100
+const NUM_DOVES = 10
 const NUM_RESOURCES = 0
 const SENSOR_AGGRESSIVE = 300
 const SENSOR_EAT = 50
@@ -77,12 +77,12 @@ function huntersAndPrey({ height, width }) {
       },
       Dove: {
         pointSize: 20,
-        color: 0xFF0000,
+        color: 0xFFFFFF,
         shape: 'spark'
       },
       Resource: {
         pointSize: 100,
-        color: 0xFFFF00,
+        color: 0x0FFF00,
         shape: 'spark'
       }
     })
@@ -246,6 +246,7 @@ class NaturalSystem extends Component {
     this._controls.noRotate = true
     this._controls.noRoll = true
     this._controls.noPan = true
+    this._controls.noZoom = true
     this._controls.zoomSpeed = 0.2
 
     // this._controls.element = this._renderer.domElement
