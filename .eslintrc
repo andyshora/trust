@@ -14,7 +14,7 @@
   "parser": "babel-eslint",
   "rules": {
     "babel/new-cap": 1,
-    "babel/no-invalid-this": 1,
+    "babel/no-invalid-this": "off",
     "semi": ["warn", "never"],
     "arrow-parens": ["error", "as-needed"],
     "comma-dangle": ["error", "never"],

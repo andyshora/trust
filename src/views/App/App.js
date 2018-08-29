@@ -6,7 +6,7 @@ import keydown from 'react-keydown'
 import ActorIntro from '../ActorIntro'
 
 // Views
-import NaturalSystem from '../systems/NaturalSystem'
+import NaturalSystem from '../../systems/NaturalSystem'
 
 // Styles
 import '../../styles/generic'
@@ -19,7 +19,7 @@ const NUM_INTRO_STAGES = 3
 
 class App extends Component {
   state = {
-    showSystem: false,
+    showSystem: true,
     stage: 0,
     prevStage: -1
   }
@@ -70,7 +70,7 @@ class App extends Component {
           {showSystem
             ? ({ height, width }) => (
               <NaturalSystem
-                height={height}
+                height={1000}
                 width={width} />
             )
             : ({ height, width }) => (
