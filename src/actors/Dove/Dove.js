@@ -94,9 +94,10 @@ class Dove extends Component {
     this._renderScene()
   }
   _setupSceneAndCamera() {
+    const { cameraZ } = this.props
     this._scene = new Scene()
     this._camera = new PerspectiveCamera(45, this._width / this._height, 1, 20000)
-    this._camera.position.set(0, 100, 500)
+    this._camera.position.set(0, 100, cameraZ)
 
     this._controls = new OrbitControls(this._camera, this._renderer.domElement)
     this._controls.maxDistance = 20000
@@ -165,7 +166,7 @@ class Dove extends Component {
         this._objectGroup = new Group()
         this._scene.add(this._objectGroup)
         this._objectGroup.add(cube)
-        this._objectGroup.add(sphere)
+        // this._objectGroup.add(sphere)
 
         // position group in the center of the scene
         this._objectGroup.position.set(0, 0, 0)
@@ -190,7 +191,7 @@ class Dove extends Component {
         this._objectGroup = new Group()
         this._scene.add(this._objectGroup)
         this._objectGroup.add(cube)
-        this._objectGroup.add(sphere)
+        // this._objectGroup.add(sphere)
 
         // position group in the center of the scene
         this._objectGroup.position.set(0, 0, 0)
@@ -227,11 +228,11 @@ class Dove extends Component {
         ]
 
         this._actorGroups[0].add(cubes[0])
-        this._actorGroups[0].add(spheres[0])
+        // this._actorGroups[0].add(spheres[0])
         this._actorGroups[0].position.set(-500, 0, 0)
 
         this._actorGroups[1].add(cubes[1])
-        this._actorGroups[1].add(spheres[1])
+        // this._actorGroups[1].add(spheres[1])
         this._actorGroups[1].position.set(500, 0, 0)
 
         this._actorGroups.forEach(g => this._objectGroup.add(g))
@@ -281,12 +282,14 @@ class Dove extends Component {
 
 Dove.propTypes = {
   autoStartAnimation: PropTypes.bool,
+  cameraZ: PropTypes.number,
   height: PropTypes.number.isRequired,
   width: PropTypes.number.isRequired
 }
 
 Dove.defaultProps = {
-  autoStartAnimation: true
+  autoStartAnimation: true,
+  cameraZ: 500
 }
 
 export default Dove

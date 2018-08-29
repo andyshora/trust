@@ -5,6 +5,9 @@ import keydown from 'react-keydown'
 // Components
 import ActorIntro from '../ActorIntro'
 
+// Views
+import NaturalSystem from '../systems/NaturalSystem'
+
 // Styles
 import '../../styles/generic'
 import {
@@ -15,12 +18,10 @@ import {
 const NUM_INTRO_STAGES = 3
 
 class App extends Component {
-  constructor(props) {
-    super(props)
-    this.state = {
-      stage: 0,
-      prevStage: -1
-    }
+  state = {
+    showSystem: false,
+    stage: 0,
+    prevStage: -1
   }
   @keydown('right')
   nextStage() {
@@ -52,25 +53,38 @@ class App extends Component {
       prevStage: stage
     })
   }
+  _handleSystemButtonClick = () => {
+    this.setState({
+      showSystem: !this.state.showSystem
+    })
+  }
   render() {
     const {
       prevStage,
+      showSystem,
       stage
     } = this.state
     return (
       <AppWrapper>
         <ContainerDimensions>
-          {({ height, width }) => (
-            <ActorIntro
-              height={height}
-              name='Dove'
-              prevStage={prevStage}
-              stage={stage}
-              width={width} />
-          )}
+          {showSystem
+            ? ({ height, width }) => (
+              <NaturalSystem
+                height={height}
+                width={width} />
+            )
+            : ({ height, width }) => (
+              <ActorIntro
+                height={height}
+                name='Dove'
+                prevStage={prevStage}
+                stage={stage}
+                width={width} />
+            )}
         </ContainerDimensions>
         <NavWrapper>
           <button onClick={this._handleButtonClick}>Next</button>
+          <button onClick={this._handleSystemButtonClick}>{showSystem ? 'Hide' : 'Show'} System</button>
         </NavWrapper>
       </AppWrapper>
     )
