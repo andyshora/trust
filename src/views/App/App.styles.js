@@ -10,6 +10,19 @@ export const NavWrapper = styled.div`
   bottom: 0;
   left: 0;
   padding: 1rem;
-  z-index: 1;
+  z-index: 2;
   width: 100%;
+`
+
+export const SystemWrapper = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+  z-index: 1;
+  background: black;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 `

@@ -12,7 +12,8 @@ import NaturalSystem from '../../systems/NaturalSystem'
 import '../../styles/generic'
 import {
   AppWrapper,
-  NavWrapper
+  NavWrapper,
+  SystemWrapper
 } from './App.styles'
 
 const NUM_INTRO_STAGES = 3
@@ -66,14 +67,20 @@ class App extends Component {
     } = this.state
     return (
       <AppWrapper>
-        <ContainerDimensions>
-          {showSystem
-            ? ({ height, width }) => (
-              <NaturalSystem
-                height={1000}
-                width={width} />
-            )
-            : ({ height, width }) => (
+        {showSystem
+          ? (
+            <SystemWrapper>
+              <ContainerDimensions>
+                {({ height, width }) => (
+                  <NaturalSystem
+                    height={height * 0.8}
+                    width={width * 0.8} />
+                )}
+              </ContainerDimensions>
+            </SystemWrapper>
+          )
+          : <ContainerDimensions>
+            {({ height, width }) => (
               <ActorIntro
                 height={height}
                 name='Dove'
@@ -81,7 +88,8 @@ class App extends Component {
                 stage={stage}
                 width={width} />
             )}
-        </ContainerDimensions>
+          </ContainerDimensions>
+        }
         <NavWrapper>
           <button onClick={this._handleButtonClick}>Next</button>
           <button onClick={this._handleSystemButtonClick}>{showSystem ? 'Hide' : 'Show'} System</button>

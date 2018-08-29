@@ -40,6 +40,7 @@
   "globals": {
     "hot": true,
     "cold": true,
+    "THREE": true,
     "__DEV__": false,
     "describe": true,
     "it": true,

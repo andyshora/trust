@@ -55,6 +55,7 @@
     "styled-normalize": "^8.0.0",
     "sw-precache-webpack-plugin": "0.11.4",
     "three": "^0.95.0",
+    "threejs-controls": "^1.0.6",
     "threejs-orbit-controls": "^1.0.1",
     "url-loader": "0.6.2",
     "webpack": "3.8.1",

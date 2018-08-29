@@ -25,7 +25,7 @@ import {
   WebGLRenderer
 } from 'three'
 
-import OrbitControls from 'threejs-orbit-controls'
+import OrthographicTrackballControls from 'threejs-controls/OrthographicTrackballControls';
 import Flora from 'florajs'
 
 // FloraJS objects
@@ -36,11 +36,11 @@ import System from '../objects/System'
 import Walker from '../objects/Walker'
 
 const DEBUG = true
-const DEBUG_LIGHTS = true
+const DEBUG_LIGHTS = false
 
-const NUM_HAWKS = 2
-const NUM_DOVES = 2
-const NUM_RESOURCES = 5
+const NUM_HAWKS = 0
+const NUM_DOVES = 100
+const NUM_RESOURCES = 0
 const SENSOR_AGGRESSIVE = 300
 const SENSOR_EAT = 50
 
@@ -81,17 +81,18 @@ function huntersAndPrey({ height, width }) {
         shape: 'spark'
       },
       Resource: {
-        pointSize: 20,
+        pointSize: 100,
         color: 0xFFFF00,
         shape: 'spark'
       }
     })
+
+    console.log('world', world.width, world.height)
     for (let i = 0; i < NUM_RESOURCES; i ++) {
       const location = new Flora.Vector(
         Flora.Utils.getRandomNumber(world.width * 0.1, world.width * 0.9),
         Flora.Utils.getRandomNumber(world.height * 0.1, world.height * 0.9)
       )
-      console.log(location)
       this.add('Resource', {
         name: 'Food',
         type: 'Food',
@@ -100,10 +101,14 @@ function huntersAndPrey({ height, width }) {
       })
     }
     for (let i = 0; i < NUM_DOVES; i ++) {
+      const location = new Flora.Vector(
+        Flora.Utils.getRandomNumber(world.width * 0.1, world.width * 0.4),
+        Flora.Utils.getRandomNumber(world.height * 0.1, world.height * 0.2)
+      )
       this.add('Walker', {
         name: 'Dove',
         type: 'Dove',
-        location: new Flora.Vector(world.width * 0.6, world.height * 0.9),
+        location,
         // remainsOnScreen: true,
         perlinSpeed: 0.001,
         motorSpeed: 2,
@@ -237,18 +242,23 @@ class NaturalSystem extends Component {
     )
     this._camera.position.set(this._width / 2, this._height / 2, 5000)
 
-    this._controls = new OrbitControls(this._camera, this._renderer.domElement)
-    this._controls.element = this._renderer.domElement
-    this._controls.parent = this._renderer.domElement
-    this._controls.maxDistance = 10000
-    this._controls.minDistance = 200
-    this._controls.enablePan = true
-    this._controls.enableZoom = true
-    this._controls.autoRotate = false
-    this._controls.target = new Vector3(this._width / 2, this._height / 2, 0)
+    this._controls = new OrthographicTrackballControls(this._camera, this._renderer.domElement)
+    this._controls.noRotate = true
+    this._controls.noRoll = true
+    this._controls.noPan = true
+    this._controls.zoomSpeed = 0.2
+
+    // this._controls.element = this._renderer.domElement
+    // this._controls.parent = this._renderer.domElement
+    // this._controls.maxDistance = 10000
+    // this._controls.minDistance = 200
+    // this._controls.enablePan = true
+    // this._controls.enableZoom = true
+    // this._controls.autoRotate = false
+    // this._controls.target = new Vector3(this._width / 2, this._height / 2, 0)
 
     if (DEBUG) {
-      const axesHelper = new AxesHelper(500)
+      const axesHelper = new AxesHelper(500, this._width)
       this._scene.add(axesHelper)
     }
 
@@ -284,9 +294,15 @@ class NaturalSystem extends Component {
     }
     /* Actual content of the scene */
     const clouds = System.firstWorld().clouds
-    this._scene.add(clouds.Resource)
-    this._scene.add(clouds.Dove)
-    this._scene.add(clouds.Hawk)
+    if (NUM_DOVES) {
+      this._scene.add(clouds.Dove)
+    }
+    if (NUM_RESOURCES) {
+      this._scene.add(clouds.Resource)
+    }
+    if (NUM_HAWKS) {
+      this._scene.add(clouds.Hawk)
+    }
 
     this._animationEngine = loop(this._renderScene)
   }
