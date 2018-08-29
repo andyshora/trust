@@ -20,7 +20,7 @@ const NUM_INTRO_STAGES = 3
 
 class App extends Component {
   state = {
-    showSystem: true,
+    showSystem: false,
     stage: 0,
     prevStage: -1
   }

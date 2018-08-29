@@ -41,7 +41,7 @@ const DEBUG_LIGHTS = false
 const NUM_HAWKS = 40
 const NUM_DOVES = 10
 const NUM_RESOURCES = 20
-const SENSOR_AGGRESSIVE = 300
+const SENSOR_AGGRESSIVE = 100
 const SENSOR_EAT = 50
 
 let foodEaten = 0
@@ -87,7 +87,6 @@ function huntersAndPrey({ height, width }) {
       }
     })
 
-    console.log('world', world.width, world.height)
     for (let i = 0; i < NUM_RESOURCES; i++) {
       const location = new Flora.Vector(
         Flora.Utils.getRandomNumber(world.width * 0.1, world.width * 0.9),
@@ -136,10 +135,14 @@ function huntersAndPrey({ height, width }) {
     }
 
     for (var i = 0; i < NUM_HAWKS; i++) {
+      const location = new Flora.Vector(
+        Flora.Utils.getRandomNumber(world.width * 0.6, world.width * 0.9),
+        Flora.Utils.getRandomNumber(world.height * 0.8, world.height * 0.9)
+      )
       this.add('Walker', {
         name: 'Hawk',
         type: 'Hawk',
-        location: new Flora.Vector(world.width * 0.1, world.height * 0.5),
+        location,
         index: i,
         motorSpeed: 2,
         minSpeed: 1,
