@@ -38,9 +38,9 @@ import Walker from '../objects/Walker'
 const DEBUG = false
 const DEBUG_LIGHTS = false
 
-const NUM_HAWKS = 0
+const NUM_HAWKS = 40
 const NUM_DOVES = 10
-const NUM_RESOURCES = 0
+const NUM_RESOURCES = 20
 const SENSOR_AGGRESSIVE = 300
 const SENSOR_EAT = 50
 
@@ -76,19 +76,19 @@ function huntersAndPrey({ height, width }) {
         shape: 'spark'
       },
       Dove: {
-        pointSize: 20,
+        pointSize: 10,
         color: 0xFFFFFF,
         shape: 'spark'
       },
       Resource: {
-        pointSize: 100,
-        color: 0x0FFF00,
+        pointSize: 30,
+        color: 0xFFFF00,
         shape: 'spark'
       }
     })
 
     console.log('world', world.width, world.height)
-    for (let i = 0; i < NUM_RESOURCES; i ++) {
+    for (let i = 0; i < NUM_RESOURCES; i++) {
       const location = new Flora.Vector(
         Flora.Utils.getRandomNumber(world.width * 0.1, world.width * 0.9),
         Flora.Utils.getRandomNumber(world.height * 0.1, world.height * 0.9)
@@ -97,18 +97,21 @@ function huntersAndPrey({ height, width }) {
         name: 'Food',
         type: 'Food',
         location,
+        index: i,
         isStatic: true
       })
     }
-    for (let i = 0; i < NUM_DOVES; i ++) {
+    for (let i = 0; i < NUM_DOVES; i++) {
       const location = new Flora.Vector(
         Flora.Utils.getRandomNumber(world.width * 0.1, world.width * 0.4),
         Flora.Utils.getRandomNumber(world.height * 0.1, world.height * 0.2)
       )
+      console.log(i)
       this.add('Walker', {
         name: 'Dove',
         type: 'Dove',
         location,
+        index: i,
         // remainsOnScreen: true,
         perlinSpeed: 0.001,
         motorSpeed: 2,
@@ -131,11 +134,13 @@ function huntersAndPrey({ height, width }) {
         ]
       })
     }
-    for (var i = 0; i < NUM_HAWKS; i ++) {
+
+    for (var i = 0; i < NUM_HAWKS; i++) {
       this.add('Walker', {
         name: 'Hawk',
         type: 'Hawk',
         location: new Flora.Vector(world.width * 0.1, world.height * 0.5),
+        index: i,
         motorSpeed: 2,
         minSpeed: 1,
         maxSpeed: 2,
@@ -304,6 +309,10 @@ class NaturalSystem extends Component {
     if (NUM_HAWKS) {
       this._scene.add(clouds.Hawk)
     }
+
+    console.log(clouds.Dove.geometry.attributes.position.array)
+    console.log(clouds.Dove.geometry.attributes.color.array)
+    debugger
 
     this._animationEngine = loop(this._renderScene)
   }

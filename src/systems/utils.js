@@ -16,8 +16,8 @@ import _ from 'lodash'
 const MAX_POINTS = 2000
 
 export const createPointCloud = ({
-  pointSize = 1,
-  color = 0x666666,
+  pointSize = 0,
+  color = 0x000000,
   shape = 'disc'
 }) => {
   const geometry = new BufferGeometry()
@@ -69,9 +69,10 @@ export const createPointCloud = ({
 }
 
 export const addPoint = ({
+  index = -1,
   geometry,
-  color = 0x666666,
-  size = 50,
+  color = 0x000000,
+  size = 0,
   position = [0, 0, 0]
 }) => {
   if (!geometry) {
@@ -80,16 +81,21 @@ export const addPoint = ({
   if (position && position.length !== 3) {
     return console.error('Invalid position array length')
   }
+  if (index < 0 || index > MAX_POINTS) {
+    return console.error('Invalid array index for point', index)
+  }
+  console.log('position', position)
 
-  const firstAvailableIndex = _.findIndex(geometry.userData.allocatedFlags, allocated => !allocated) * 2
-
-  geometry.attributes.position.array[firstAvailableIndex] = position[0]; geometry.attributes.position.array[firstAvailableIndex + 1] = position[1]
-  geometry.attributes.position.array[firstAvailableIndex + 2] = position[2]
+  // const firstAvailableIndex = _.findIndex(geometry.userData.allocatedFlags, allocated => !allocated) * 3
+  // console.log('firstAvailableIndex', firstAvailableIndex)
+  geometry.attributes.position.array[index * 3] = position[0]
+  geometry.attributes.position.array[(index * 3) + 1] = position[1]
+  geometry.attributes.position.array[(index * 3) + 2] = position[2]
 
   const c = new Color(color)
-  geometry.attributes.color.array[firstAvailableIndex] = c.r;
-  geometry.attributes.color.array[firstAvailableIndex + 1] = c.g
-  geometry.attributes.color.array[firstAvailableIndex + 2] = c.b
+  geometry.attributes.color.array[index * 3] = c.r
+  geometry.attributes.color.array[(index * 3) + 1] = c.g
+  geometry.attributes.color.array[(index * 3) + 2] = c.b
 
   geometry.attributes.position.needsUpdate = true
   geometry.attributes.color.needsUpdate = true
@@ -108,14 +114,13 @@ export const updatePoint = ({
   }
 }) => {
   if (index < 0 || index > MAX_POINTS) {
-    debugger
     return console.error('index out of bounds', index)
   }
 
   if (position) {
     geometry.attributes.position.array[(index * 3)] = position[0]
     geometry.attributes.position.array[(index * 3) + 1] = position[1]
-    geometry.attributes.position.array[index + 2] = position[2]
+    geometry.attributes.position.array[(index * 3) + 2] = position[2]
     if (updateFlags && updateFlags.position) {
       geometry.attributes.position.needsUpdate = true
     }

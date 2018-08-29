@@ -139,14 +139,18 @@ World.prototype.removeItem = function(item, data) {
  * @param {Object} item An instance of item.
  */
 World.prototype.add = function(item) {
-  console.log(item)
+  // if (item.index === -1) {
+  //   return
+  // }
   switch (item.type) {
     case 'Dove':
+      console.log('adding dove', item, item.location)
       this.walkers.push(item)
       // add a vertex to the cloud to represent Dove's position
       // this.clouds.Dove.geometry.vertices.push(new Vector3(item.location.x, item.location.y, 0));
       // this.clouds.Dove.geometry.colors.push(new Color(0xFFFFFF));
       addPoint({
+        index: item.index,
         geometry: this.clouds.Dove.geometry,
         color: this.options.Dove.color,
         size: this.options.Dove.pointSize,
@@ -160,6 +164,7 @@ World.prototype.add = function(item) {
         // this.clouds.Resource.geometry.vertices.push(new Vector3(item.location.x, item.location.y, 0));
         // this.clouds.Resource.geometry.colors.push(new Color(0x00FF33));
         addPoint({
+          index: item.index,
           geometry: this.clouds.Resource.geometry,
           color: this.options.Resource.color,
           size: this.options.Resource.pointSize,
@@ -175,6 +180,7 @@ World.prototype.add = function(item) {
       // this.clouds.Hawk.geometry.vertices.push(new Vector3(item.location.x, item.location.y, 0));
       // this.clouds.Hawk.geometry.colors.push(new Color(0xFF0000));
       addPoint({
+        index: item.index,
         geometry: this.clouds.Hawk.geometry,
         color: this.options.Hawk.color,
         size: this.options.Hawk.pointSize,

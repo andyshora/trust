@@ -67,6 +67,8 @@ Item.prototype.init = function(world, opt_options) {
 
   var options = opt_options || {}
 
+  this.index = options.index
+
   this.name = typeof this.name !== 'undefined' ? this.name
     : options.name || 'Item'
 
