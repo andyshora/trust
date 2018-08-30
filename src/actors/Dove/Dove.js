@@ -1,6 +1,7 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import loop from 'raf-loop'
+import _ from 'lodash'
 
 import {
   // AmbientLight,
@@ -38,7 +39,6 @@ class Dove extends Component {
   _actorObj = null
   _animationEngine = null
   _controls = null
-  _cube = null
   _group = null
   _lightTarget = null
   _scene = null
@@ -149,24 +149,33 @@ class Dove extends Component {
 
     this._animationEngine = loop(this._renderScene)
   }
-  _setupObjects() {
-
-    this._objectGroup = new Group()
+  _loadMesh = ({
+    group,
+    name = 'dove',
+    numMeshes = 1,
+    material
+  }) => {
     const loader = new THREE.OBJLoader()
-    const material = new MeshStandardMaterial({ color: 0xFFFFFF, wireframe: true, roughness: 0.18, metalness: 0 })
-
+    const SCALE = name === 'dove' ? 1000 : 300
     loader.load(
     	// resource URL
-    	'dove.obj',
+    	`${name}.obj`,
     	// called when resource is loaded
     	object => {
-    		this._actorObj = object
-        this._actorObj.children.forEach(mesh => mesh.material = material)
-        this._actorObj.scale.x = 1000
-        this._actorObj.scale.y = 1000
-        this._actorObj.scale.z = 1000
-        console.log('this._actorObj', this._actorObj)
-        this._objectGroup.add(this._actorObj)
+        const _objects = _.times(numMeshes, i => {
+          let obj = object.clone()
+          obj.children.forEach(mesh => mesh.material = material)
+          obj.scale.x = SCALE
+          obj.scale.y = SCALE
+          obj.scale.z = SCALE
+          return obj
+        })
+
+        if (group.length) {
+          group.forEach((g, i) => g.add(_objects[i]))
+        } else {
+          group.add(_objects[0])
+        }
         this._renderScene()
     	},
     	// called when loading is in progresses
@@ -178,14 +187,17 @@ class Dove extends Component {
     		console.log('An error happened')
     	}
     )
+  }
+  _setupObjects() {
+
+    const { name } = this.props
+    const material = new MeshStandardMaterial({ color: 0xFFFFFF, wireframe: true, roughness: 0.18, metalness: 0 })
+    this._objectGroup = new Group()
 
     const { behaviour } = this.props
     switch (behaviour) {
       case 'spinning': {
         const geometry = new BoxGeometry(100, 100, 100)
-
-        const cube = new Mesh(geometry, material)
-
         const sphereGeometry = new SphereGeometry(100, 32, 32)
         const sphereMaterial = new MeshStandardMaterial({
           color: 0x666666,
@@ -198,11 +210,7 @@ class Dove extends Component {
         const sphere = new Mesh(sphereGeometry, sphereMaterial)
         this._scene.add(this._objectGroup)
 
-        // if (this._actorObj) {
-        //   this._objectGroup.add(this._actorObj)
-        // } else {
-        //   this._objectGroup.add(cube)
-        // }
+        this._loadMesh({ name, material, group: this._objectGroup })
 
         // position group in the center of the scene
         this._objectGroup.position.set(0, 0, 0)
@@ -210,8 +218,6 @@ class Dove extends Component {
       }
       case 'flying': {
         const geometry = new BoxGeometry(100, 100, 100)
-        const cube = new Mesh(geometry, material)
-
         const sphereGeometry = new SphereGeometry(100, 32, 32)
         const sphereMaterial = new MeshStandardMaterial({
           color: 0x666666,
@@ -224,7 +230,8 @@ class Dove extends Component {
         const sphere = new Mesh(sphereGeometry, sphereMaterial)
 
         this._scene.add(this._objectGroup)
-        this._objectGroup.add(cube)
+
+        this._loadMesh({ name, material, group: this._objectGroup })
         // this._objectGroup.add(sphere)
 
         // position group in the center of the scene
@@ -233,10 +240,6 @@ class Dove extends Component {
       }
       case 'meeting': {
         const geometry = new BoxGeometry(100, 100, 100)
-        const cubes = [
-          new Mesh(geometry, material),
-          new Mesh(geometry, material)
-        ]
 
         const sphereGeometry = new SphereGeometry(100, 32, 32)
         const sphereMaterial = new MeshStandardMaterial({
@@ -258,13 +261,20 @@ class Dove extends Component {
           new Group()
         ]
 
-        this._actorGroups[0].add(cubes[0])
         // this._actorGroups[0].add(spheres[0])
         this._actorGroups[0].position.set(-500, 0, 0)
+        this._actorGroups[0].rotateY(90 * Math.PI / 180)
 
-        this._actorGroups[1].add(cubes[1])
         // this._actorGroups[1].add(spheres[1])
         this._actorGroups[1].position.set(500, 0, 0)
+        this._actorGroups[1].rotateY(-90 * Math.PI / 180)
+
+        this._loadMesh({
+          name,
+          numMeshes: 2,
+          material,
+          group: this._actorGroups
+        })
 
         this._actorGroups.forEach(g => this._objectGroup.add(g))
         this._scene.add(this._objectGroup)
@@ -314,13 +324,15 @@ class Dove extends Component {
 Dove.propTypes = {
   autoStartAnimation: PropTypes.bool,
   cameraZ: PropTypes.number,
+  name: PropTypes.string,
   height: PropTypes.number.isRequired,
   width: PropTypes.number.isRequired
 }
 
 Dove.defaultProps = {
   autoStartAnimation: true,
-  cameraZ: 500
+  cameraZ: 500,
+  name: 'dove'
 }
 
 export default Dove

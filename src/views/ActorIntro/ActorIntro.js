@@ -63,6 +63,7 @@ class ActorIntro extends Component {
       <ActorWrapper {...actorDimensions}>
         <Dove
           ref={this._actor}
+          name={name.toLowerCase()}
           behaviour={_getBehaviour(stage)}
           cameraZ={stage === 2 ? 1500 : 500}
           {...actorDimensions} />
