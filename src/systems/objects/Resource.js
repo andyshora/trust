@@ -3,6 +3,8 @@ import {
   Vector
 } from 'burner'
 
+import _ from 'lodash'
+
 import Item from './Item'
 // import System from './System';
 
@@ -50,6 +52,40 @@ Resource.prototype.init = function(world, opt_options) {
   this.offsetDistance = typeof options.offsetDistance === 'undefined' ? 0 : options.offsetDistance
   this.offsetAngle = options.offsetAngle || 0
   this.isStatic = !!options.isStatic
+  this.claims = []
+  this.maxClaimTimer = 200
+  this.claimTimer = 0
+}
+
+Resource.prototype.newClaim = function(newClaimer) {
+  if (this.claims.length === 2 || _.findIndex(this.claims, c => c.id === newClaimer.id) !== -1) {
+    return
+  }
+  if (!this.claims.length && !this.claimTimer) {
+    console.log('set claim timer')
+    this.claimTimer = this.maxClaimTimer
+  }
+
+  this.claims.push(newClaimer)
+  console.log('claims', this.claims)
+
+  if (this.claims.length === 2) {
+    this.fightToDetermineWinner(this.claims)
+    this.claimTimer = 0
+  }
+}
+
+Resource.prototype.fightToDetermineWinner = function(claims) {
+  console.log('fightToDetermineWinner', claims)
+  // todo
+  this.setWinner(claims[0])
+}
+
+Resource.prototype.setWinner = function(claimer) {
+  console.log('setWinner', claimer)
+  this.claims = []
+  this.consumed = true
+
 }
 
 Resource.prototype.step = function() {
@@ -59,6 +95,18 @@ Resource.prototype.step = function() {
   this.beforeStep.call(this)
 
   // do stuff - check collisions, etc
+  if (this.claimTimer) {
+    this.claimTimer--
+    // console.log('claimTimer', this.claimTimer)
+  }
+
+  if (!this.claimTimer && this.claims.length) {
+    if (this.claims.length === 1) {
+      this.setWinner(this.claims[0])
+    } else {
+      this.fightToDetermineWinner(this.claims)
+    }
+  }
 
   this.afterStep.call(this)
 }

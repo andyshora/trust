@@ -188,7 +188,7 @@ Sensor.prototype.getBehavior = function() {
           sensor.parent[target.type + 'Level'] += 1
 
           if (sensor.onConsume && !target.consumed) {
-            target.consumed = true
+            // target.consumed = true
             sensor.onConsume(sensor, target)
           }
           return

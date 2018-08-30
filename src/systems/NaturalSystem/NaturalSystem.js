@@ -38,19 +38,20 @@ import Walker from '../objects/Walker'
 const DEBUG = false
 const DEBUG_LIGHTS = false
 
-const NUM_HAWKS = 40
-const NUM_DOVES = 10
-const NUM_RESOURCES = 20
-const SENSOR_AGGRESSIVE = 100
+const NUM_HAWKS = 1
+const NUM_DOVES = 1
+const NUM_RESOURCES = 1
+const SENSOR_AGGRESSIVE = 1000
 const SENSOR_EAT = 50
 
 let foodEaten = 0
 
 const _onConsume = (sensor, resource) => {
-  const winner = sensor.parent
+  const actorClaimingFood = sensor.parent
+  resource.newClaim(actorClaimingFood)
   // console.log('winner eats', winner.id, winner.FoodLevel)
-  foodEaten += 1
-  console.warn('foodEaten', foodEaten)
+  // foodEaten += 1
+  // console.warn('foodEaten', foodEaten)
 
   // System.remove(resource, {
   //   list: resource.world.resources
@@ -71,17 +72,17 @@ function huntersAndPrey({ height, width }) {
       gravity: new Flora.Vector(),
       c: 0,
       Hawk: {
-        pointSize: 40,
+        pointSize: 60,
         color: 0xFF0000,
         shape: 'spark'
       },
       Dove: {
-        pointSize: 40,
+        pointSize: 60,
         color: 0xFFFFFF,
         shape: 'spark'
       },
       Resource: {
-        pointSize: 40,
+        pointSize: 60,
         color: 0x00FF00,
         shape: 'spark'
       }
@@ -105,7 +106,6 @@ function huntersAndPrey({ height, width }) {
         Flora.Utils.getRandomNumber(world.width * 0.1, world.width * 0.4),
         Flora.Utils.getRandomNumber(world.height * 0.1, world.height * 0.2)
       )
-      console.log(i)
       this.add('Walker', {
         name: 'Dove',
         type: 'Dove',
