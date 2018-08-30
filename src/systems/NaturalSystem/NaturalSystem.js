@@ -71,18 +71,18 @@ function huntersAndPrey({ height, width }) {
       gravity: new Flora.Vector(),
       c: 0,
       Hawk: {
-        pointSize: 20,
-        color: 0xFF00FF,
+        pointSize: 40,
+        color: 0xFF0000,
         shape: 'spark'
       },
       Dove: {
-        pointSize: 10,
+        pointSize: 40,
         color: 0xFFFFFF,
         shape: 'spark'
       },
       Resource: {
-        pointSize: 30,
-        color: 0xFFFF00,
+        pointSize: 40,
+        color: 0x00FF00,
         shape: 'spark'
       }
     })

@@ -46,6 +46,7 @@ class ActorIntro extends Component {
   _actor = React.createRef()
   render() {
     const {
+      copy,
       height,
       name,
       prevStage,
@@ -75,23 +76,23 @@ class ActorIntro extends Component {
         <ActorSectionsWrapper height={height} width={width}>
           <ActorSpin active={!stage} transitionOut={!prevStage}>
             <hgroup>
-              <h1>{name} 1</h1>
+              <h1>{copy[stage].heading}</h1>
+              {copy[stage].lines.map((l, i) => <p key={i}>{l}</p>)}
             </hgroup>
-            <aside>Lorem ipsum sudor sit amet.</aside>
             {!stage && actorComponent}
           </ActorSpin>
           <ActorDescription active={stage === 1} transitionOut={prevStage === 1}>
             <hgroup>
-              <h1>{name} 2</h1>
+              <h1>{copy[stage].heading}</h1>
+              {copy[stage].lines.map((l, i) => <p key={i}>{l}</p>)}
             </hgroup>
-            <aside>Lorem ipsum sudor sit amet.</aside>
             {stage === 1 && actorComponent}
           </ActorDescription>
           <ActorMeets active={stage === 2} transitionOut={prevStage === 2}>
             <hgroup>
-              <h1>{name} 3</h1>
+              <h1>{copy[stage].heading}</h1>
+              {copy[stage].lines.map((l, i) => <p key={i}>{l}</p>)}
             </hgroup>
-            <aside>Lorem ipsum sudor sit amet.</aside>
             {stage === 2 && actorComponent}
           </ActorMeets>
         </ActorSectionsWrapper>
@@ -101,6 +102,7 @@ class ActorIntro extends Component {
 }
 
 ActorIntro.propTypes = {
+  copy: PropTypes.arrayOf(PropTypes.object).isRequired,
   height: PropTypes.number.isRequired,
   name: PropTypes.string.isRequired,
   prevStage: PropTypes.number,

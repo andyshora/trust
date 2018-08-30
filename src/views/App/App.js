@@ -16,6 +16,49 @@ import {
   SystemWrapper
 } from './App.styles'
 
+const COPY = {
+  Dove: [
+    {
+      heading: 'The Dove',
+      lines: ['Doves are passive, and don\'t like to fight.']
+    },
+    {
+      heading: 'Doves Cooperate',
+      lines: [
+        'They would rather forfeit resources to stronger opposition, and not risk losing cost C to gain resource G.',
+        'They\'ll happily take G if there is no cost C to lose, which only happens if they face no opposition or encounter another Dove.'
+      ]
+    },
+    {
+      heading: 'Dove: Pure Strategy',
+      lines: [
+        'Posture until the other withdraws.',
+        'Withdraw if the other escalates or seems too strong'
+      ]
+    }
+  ],
+  Hawk: [
+    {
+      heading: 'The Hawk',
+      lines: ['Hawks are aggressive']
+    },
+    {
+      heading: 'Hawk Fight',
+      lines: [
+        'Hawks don\'t mind fighting for resources to gain G, even though they may lose and forfeit cost C, where G < C.',
+        'Note: the higher the cost C, the more dangerous the animal is.'
+      ]
+    },
+    {
+      heading: 'Hawk: Pure Strategy',
+      lines: [
+        'Always escalate the conflict until either the other withdraws',
+        'If the opposition does not withdraw, you are badly hurt.'
+      ]
+    }
+  ]
+}
+
 const STAGES = [
   { type: 'intro', actor: 'Dove', stage: 0 },
   { type: 'intro', actor: 'Dove', stage: 1 },
@@ -77,6 +120,7 @@ class App extends Component {
       showSystem,
       stage
     } = this.state
+    const copy = COPY[activeStage.actor]
     return (
       <AppWrapper>
         {activeStage.type === 'system'
@@ -96,6 +140,7 @@ class App extends Component {
               <ActorIntro
                 height={height}
                 name={activeStage.actor}
+                copy={copy}
                 prevStage={prevStage % 3}
                 stage={stage % 3}
                 width={width} />

@@ -191,13 +191,15 @@ class Dove extends Component {
   _setupObjects() {
 
     const { name } = this.props
-    const material = new MeshStandardMaterial({ color: 0xFFFFFF, wireframe: true, roughness: 0.18, metalness: 0 })
+    const materials = {
+      dove: new MeshStandardMaterial({ color: 0xFFFFFF, wireframe: true, roughness: 0.18, metalness: 0 }),
+      hawk: new MeshStandardMaterial({ color: 0xFF0000, wireframe: true, roughness: 0.18, metalness: 0 })
+    }
     this._objectGroup = new Group()
 
     const { behaviour } = this.props
     switch (behaviour) {
       case 'spinning': {
-        const geometry = new BoxGeometry(100, 100, 100)
         const sphereGeometry = new SphereGeometry(100, 32, 32)
         const sphereMaterial = new MeshStandardMaterial({
           color: 0x666666,
@@ -210,7 +212,7 @@ class Dove extends Component {
         const sphere = new Mesh(sphereGeometry, sphereMaterial)
         this._scene.add(this._objectGroup)
 
-        this._loadMesh({ name, material, group: this._objectGroup })
+        this._loadMesh({ name, material: materials[name], group: this._objectGroup })
 
         // position group in the center of the scene
         this._objectGroup.position.set(0, 0, 0)
@@ -231,7 +233,7 @@ class Dove extends Component {
 
         this._scene.add(this._objectGroup)
 
-        this._loadMesh({ name, material, group: this._objectGroup })
+        this._loadMesh({ name, material: materials[name], group: this._objectGroup })
         // this._objectGroup.add(sphere)
 
         // position group in the center of the scene
@@ -272,7 +274,7 @@ class Dove extends Component {
         this._loadMesh({
           name,
           numMeshes: 2,
-          material,
+          material: materials[name],
           group: this._actorGroups
         })
 

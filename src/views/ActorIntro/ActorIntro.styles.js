@@ -26,59 +26,30 @@ const ActorIntroSection = styled.section`
   height: 100%;
   padding: 1rem;
   display: grid;
+  text-align: center;
 
   > hgroup {
-    grid-area: heading;
     padding: 1rem 2rem;
-    border: 1px solid lightBlue;
+    min-height: 200px;
   }
 
   > div {
-    grid-area: scene;
-  }
-
-  > aside {
-    grid-area: description;
-    border: 1px solid white;
+    margin: 2rem auto;
   }
   ${media.fromLarge``}
 `
 
 export const ActorSpin = ActorIntroSection.extend`
-  display: ${props => props.active || props.transitionOut ? 'grid' : 'none'};
+  display: ${props => props.active || props.transitionOut ? 'block' : 'none'};
   animation: ${props => props.transitionOut ? `${transitionOut} 1s forwards`: 'none'};
-  text-align: center;
-
-  grid-template-columns: 100%;
-  grid-template-areas:
-            "heading"
-            "description"
-            "scene";
-
-  > div {
-    margin: 0 auto;
-  }
 `
 export const ActorDescription = ActorIntroSection.extend`
-  display: ${props => props.active || props.transitionOut ? 'grid' : 'none'};
+  display: ${props => props.active || props.transitionOut ? 'block' : 'none'};
   animation: ${props => props.transitionOut ? `${transitionOut} 1s forwards`: 'none'};
-  grid-template-columns: 50% 50%;
-  grid-template-areas:
-            "heading heading"
-            "scene description";
 `
 export const ActorMeets = ActorIntroSection.extend`
-  display: ${props => props.active || props.transitionOut ? 'grid' : 'none'};
+  display: ${props => props.active || props.transitionOut ? 'block' : 'none'};
   animation: ${props => props.transitionOut ? `${transitionOut} 1s forwards`: 'none'};
-
-  grid-template-areas:
-            "heading"
-            "description"
-            "scene";
-
-  > div {
-    margin: 0 auto;
-  }
 `
 
 export const ActorWrapper = styled.div`
