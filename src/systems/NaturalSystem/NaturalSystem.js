@@ -253,8 +253,8 @@ class NaturalSystem extends Component {
     this._controls = new OrthographicTrackballControls(this._camera, this._renderer.domElement)
     this._controls.noRotate = true
     this._controls.noRoll = true
-    this._controls.noPan = true
-    this._controls.noZoom = true
+    this._controls.noPan = false
+    this._controls.noZoom = false
     this._controls.zoomSpeed = 0.2
 
     // this._controls.element = this._renderer.domElement
@@ -312,10 +312,6 @@ class NaturalSystem extends Component {
     if (NUM_HAWKS) {
       this._scene.add(clouds.Hawk)
     }
-
-    console.log(clouds.Dove.geometry.attributes.position.array)
-    console.log(clouds.Dove.geometry.attributes.color.array)
-    debugger
 
     this._animationEngine = loop(this._renderScene)
   }

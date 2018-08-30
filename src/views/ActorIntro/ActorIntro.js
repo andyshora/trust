@@ -47,6 +47,7 @@ class ActorIntro extends Component {
   render() {
     const {
       height,
+      name,
       prevStage,
       stage,
       width
@@ -73,21 +74,21 @@ class ActorIntro extends Component {
         <ActorSectionsWrapper height={height} width={width}>
           <ActorSpin active={!stage} transitionOut={!prevStage}>
             <hgroup>
-              <h1>Heading 1</h1>
+              <h1>{name} 1</h1>
             </hgroup>
             <aside>Lorem ipsum sudor sit amet.</aside>
             {!stage && actorComponent}
           </ActorSpin>
           <ActorDescription active={stage === 1} transitionOut={prevStage === 1}>
             <hgroup>
-              <h1>Heading 2</h1>
+              <h1>{name} 2</h1>
             </hgroup>
             <aside>Lorem ipsum sudor sit amet.</aside>
             {stage === 1 && actorComponent}
           </ActorDescription>
           <ActorMeets active={stage === 2} transitionOut={prevStage === 2}>
             <hgroup>
-              <h1>Heading 3</h1>
+              <h1>{name} 3</h1>
             </hgroup>
             <aside>Lorem ipsum sudor sit amet.</aside>
             {stage === 2 && actorComponent}

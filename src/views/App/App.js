@@ -16,10 +16,19 @@ import {
   SystemWrapper
 } from './App.styles'
 
-const NUM_INTRO_STAGES = 3
+const STAGES = [
+  { type: 'intro', actor: 'Dove', stage: 0 },
+  { type: 'intro', actor: 'Dove', stage: 1 },
+  { type: 'intro', actor: 'Dove', stage: 2 },
+  { type: 'intro', actor: 'Hawk', stage: 3 },
+  { type: 'intro', actor: 'Hawk', stage: 4 },
+  { type: 'intro', actor: 'Hawk', stage: 5 },
+  { type: 'system', stage: 6 }
+]
 
 class App extends Component {
   state = {
+    activeStage: STAGES[0],
     showSystem: false,
     stage: 0,
     prevStage: -1
@@ -27,10 +36,11 @@ class App extends Component {
   @keydown('right')
   nextStage() {
     const { stage } = this.state
-    if (stage === NUM_INTRO_STAGES - 1) {
+    if (stage === STAGES.length - 1) {
       return
     }
     this.setState({
+      activeStage: STAGES[stage + 1],
       stage: stage + 1,
       prevStage: stage
     })
@@ -42,13 +52,14 @@ class App extends Component {
       return
     }
     this.setState({
+      activeStage: STAGES[stage - 1],
       stage: stage - 1,
       prevStage: stage
     })
   }
   _handleButtonClick = () => {
     const { stage } = this.state
-    const nextStage = stage === NUM_INTRO_STAGES - 1 ? 0 : stage + 1
+    const nextStage = stage === STAGES.length - 1 ? 0 : stage + 1
     this.setState({
       stage: nextStage,
       prevStage: stage
@@ -61,13 +72,14 @@ class App extends Component {
   }
   render() {
     const {
+      activeStage,
       prevStage,
       showSystem,
       stage
     } = this.state
     return (
       <AppWrapper>
-        {showSystem
+        {activeStage.type === 'system'
           ? (
             <SystemWrapper>
               <ContainerDimensions>
@@ -83,9 +95,9 @@ class App extends Component {
             {({ height, width }) => (
               <ActorIntro
                 height={height}
-                name='Dove'
-                prevStage={prevStage}
-                stage={stage}
+                name={activeStage.actor}
+                prevStage={prevStage % 3}
+                stage={stage % 3}
                 width={width} />
             )}
           </ContainerDimensions>

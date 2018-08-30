@@ -25,12 +25,17 @@ import {
   WebGLRenderer
 } from 'three'
 
+import OBJLoader from 'three-obj-loader'
 import OrbitControls from 'threejs-orbit-controls'
+
+OBJLoader(THREE)
+console.log(typeof THREE.OBJLoader)
 
 const DEBUG = false
 const DEBUG_LIGHTS = false
 
 class Dove extends Component {
+  _actorObj = null
   _animationEngine = null
   _controls = null
   _cube = null
@@ -97,7 +102,7 @@ class Dove extends Component {
     const { cameraZ } = this.props
     this._scene = new Scene()
     this._camera = new PerspectiveCamera(45, this._width / this._height, 1, 20000)
-    this._camera.position.set(0, 100, cameraZ)
+    this._camera.position.set(0, 200, cameraZ)
 
     this._controls = new OrbitControls(this._camera, this._renderer.domElement)
     this._controls.maxDistance = 20000
@@ -145,11 +150,40 @@ class Dove extends Component {
     this._animationEngine = loop(this._renderScene)
   }
   _setupObjects() {
+
+    this._objectGroup = new Group()
+    const loader = new THREE.OBJLoader()
+    const material = new MeshStandardMaterial({ color: 0xFFFFFF, wireframe: true, roughness: 0.18, metalness: 0 })
+
+    loader.load(
+    	// resource URL
+    	'dove.obj',
+    	// called when resource is loaded
+    	object => {
+    		this._actorObj = object
+        this._actorObj.children.forEach(mesh => mesh.material = material)
+        this._actorObj.scale.x = 1000
+        this._actorObj.scale.y = 1000
+        this._actorObj.scale.z = 1000
+        console.log('this._actorObj', this._actorObj)
+        this._objectGroup.add(this._actorObj)
+        this._renderScene()
+    	},
+    	// called when loading is in progresses
+    	xhr => {
+    		console.log((xhr.loaded / xhr.total * 100) + '% loaded')
+    	},
+    	// called when loading has errors
+    	error => {
+    		console.log('An error happened')
+    	}
+    )
+
     const { behaviour } = this.props
     switch (behaviour) {
       case 'spinning': {
         const geometry = new BoxGeometry(100, 100, 100)
-        const material = new MeshStandardMaterial({ color: 0xFF00FF, wireframe: DEBUG, roughness: 0.18, metalness: 0.5 })
+
         const cube = new Mesh(geometry, material)
 
         const sphereGeometry = new SphereGeometry(100, 32, 32)
@@ -162,11 +196,13 @@ class Dove extends Component {
           metalness: 0.1
         })
         const sphere = new Mesh(sphereGeometry, sphereMaterial)
-
-        this._objectGroup = new Group()
         this._scene.add(this._objectGroup)
-        this._objectGroup.add(cube)
-        // this._objectGroup.add(sphere)
+
+        // if (this._actorObj) {
+        //   this._objectGroup.add(this._actorObj)
+        // } else {
+        //   this._objectGroup.add(cube)
+        // }
 
         // position group in the center of the scene
         this._objectGroup.position.set(0, 0, 0)
@@ -174,7 +210,6 @@ class Dove extends Component {
       }
       case 'flying': {
         const geometry = new BoxGeometry(100, 100, 100)
-        const material = new MeshStandardMaterial({ color: 0xFF00FF, wireframe: DEBUG, roughness: 0.18, metalness: 0.5 })
         const cube = new Mesh(geometry, material)
 
         const sphereGeometry = new SphereGeometry(100, 32, 32)
@@ -188,7 +223,6 @@ class Dove extends Component {
         })
         const sphere = new Mesh(sphereGeometry, sphereMaterial)
 
-        this._objectGroup = new Group()
         this._scene.add(this._objectGroup)
         this._objectGroup.add(cube)
         // this._objectGroup.add(sphere)
@@ -199,7 +233,6 @@ class Dove extends Component {
       }
       case 'meeting': {
         const geometry = new BoxGeometry(100, 100, 100)
-        const material = new MeshStandardMaterial({ color: 0xFF00FF, wireframe: DEBUG, roughness: 0.18, metalness: 0.5 })
         const cubes = [
           new Mesh(geometry, material),
           new Mesh(geometry, material)
@@ -219,8 +252,6 @@ class Dove extends Component {
           new Mesh(sphereGeometry, sphereMaterial),
           new Mesh(sphereGeometry, sphereMaterial)
         ]
-
-        this._objectGroup = new Group()
 
         this._actorGroups = [
           new Group(),
