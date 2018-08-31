@@ -52,6 +52,7 @@ Resource.prototype.init = function(world, opt_options) {
   this.offsetDistance = typeof options.offsetDistance === 'undefined' ? 0 : options.offsetDistance
   this.onResourceWon =  typeof options.onResourceWon === 'function' ? options.onResourceWon : null
   this.offsetAngle = options.offsetAngle || 0
+  this.executePayoffMatrix = typeof options.executePayoffMatrix === 'function' ? options.executePayoffMatrix : claims => claims[0]
   this.isStatic = !!options.isStatic
   this.claims = []
   this.maxClaimTimer = options.maxClaimTimer ||200
@@ -64,12 +65,12 @@ Resource.prototype.newClaim = function(newClaimer) {
     return
   }
   if (!this.claims.length && !this.claimTimer) {
-    console.log('set claim timer')
+    // console.log('set claim timer')
     this.claimTimer = this.maxClaimTimer
   }
 
   this.claims.push(newClaimer)
-  console.log('claims', this.claims)
+  // console.log('claims', this.claims)
 
   if (this.claims.length === 2) {
     this.fightToDetermineWinner(this.claims)
@@ -78,20 +79,27 @@ Resource.prototype.newClaim = function(newClaimer) {
 }
 
 Resource.prototype.fightToDetermineWinner = function(claims) {
-  console.log('fightToDetermineWinner', claims)
-  // todo
-  this.setWinner(claims[0])
-}
+  const result = this.executePayoffMatrix(claims.map(c => c.type))
+  const { costs, gains } = result
 
-Resource.prototype.setWinner = function(claimer) {
-  console.log('setWinner', claimer)
-  this.claims = []
-  this.consumed = true
+  this.updateLifeTotals({ actors: claims, costs, gains })
 
   if (typeof this.onResourceWon === 'function') {
     this.onResourceWon(this)
   }
-  // System.remove(this, { list: this.world.resources })
+}
+
+Resource.prototype.updateLifeTotals = function({ actors, costs, gains }) {
+  this.claims = []
+  this.consumed = true
+  // console.log('updateLifeTotals', actors.map(a => a.type), gains, costs)
+
+  // add gains and costs
+  actors.forEach((a, i) => {
+    const lifeChange = gains[i] - costs[i]
+    a.life += lifeChange
+    console.log(`${a.id} gained ${lifeChange}, new life total: ${a.life}`)
+  })
 }
 
 Resource.prototype.step = function() {
@@ -107,11 +115,7 @@ Resource.prototype.step = function() {
   }
 
   if (!this.claimTimer && this.claims.length) {
-    if (this.claims.length === 1) {
-      this.setWinner(this.claims[0])
-    } else {
-      this.fightToDetermineWinner(this.claims)
-    }
+    this.fightToDetermineWinner(this.claims)
   }
 
   this.afterStep.call(this)

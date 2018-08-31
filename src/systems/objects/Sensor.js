@@ -203,7 +203,6 @@ Sensor.prototype.getBehavior = function() {
          */
         if (Utils.isInside(sensor.parent, target)) {
 
-          // todo - fight happens here?
           if (target.width > 2) {
             target.width *= 0.95
             if (!sensor.parent[target.type + 'Level']) {

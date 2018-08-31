@@ -39,15 +39,52 @@ import Walker from '../objects/Walker'
 const DEBUG = false
 const DEBUG_LIGHTS = false
 
-const NUM_HAWKS = 5
-const NUM_DOVES = 5
+const NUM_HAWKS = 2
+const NUM_DOVES = 10
 const NUM_RESOURCES = 100
 const SENSOR_AGGRESSIVE = 100
 const SENSOR_EAT = 50
+const FIGHT_COST = 20
+const WIN_GAIN = 8
+const LIFE_TOTAL = 100
 
 const RESOURCES_REGENERATE = false
 
 let foodEaten = 0
+let fightCount = 0
+
+// the game theory payoff matrix
+const payoffMatrix = actors => {
+  if (actors.length === 1) {
+    // no competition - winner takes all
+    return {
+      costs: [0, 0],
+      gains: [WIN_GAIN, 0]
+    }
+  }
+  const str = actors.join('')
+  let gains = [WIN_GAIN / 2, WIN_GAIN / 2]
+  let costs = [0, 0]
+  switch (str) {
+    case 'HawkHawk':
+      // the early bird gets the worm
+      costs = [FIGHT_COST / 2, FIGHT_COST / 2]
+      fightCount++
+      break
+    case 'HawkDove':
+      gains = [WIN_GAIN, 0]
+      break
+    case 'DoveHawk':
+      gains = [0, WIN_GAIN]
+      break
+    default:
+      break
+  }
+  return {
+    costs,
+    gains
+  }
+}
 
 const _onConsume = (sensor, resource) => {
   resource.newClaim(sensor.parent)
@@ -60,7 +97,6 @@ function _onResourceWon(resource) {
   })
 
   const availableResources = _.filter(resource.world.resources, r => !r.consumed)
-  console.log('availableResources', availableResources.length)
 
   // add a new resource
   const location = new Flora.Vector(
@@ -76,9 +112,16 @@ function _onResourceWon(resource) {
       index: numResources + 1,
       isStatic: true,
       onResourceWon: _onResourceWon,
-      maxClaimTimer: 100
+      maxClaimTimer: 100,
+      executePayoffMatrix: payoffMatrix
     })
   }
+
+  const doveLife = _.sumBy(System.firstWorld().walkers, w => w.life)
+  const hawkLife = _.sumBy(System.firstWorld().agents, w => w.life)
+  console.log('doveLife (total, average)', doveLife / NUM_DOVES)
+  console.log('hawkLife (total, average)', hawkLife / NUM_HAWKS, `(${fightCount} fights)`)
+
 }
 
 function huntersAndPrey({ height, width }) {
@@ -97,17 +140,17 @@ function huntersAndPrey({ height, width }) {
       Hawk: {
         pointSize: 60,
         color: 0xFF0000,
-        shape: 'spark'
+        shape: 'disc'
       },
       Dove: {
         pointSize: 60,
         color: 0xFFFFFF,
-        shape: 'spark'
+        shape: 'disc'
       },
       Resource: {
         pointSize: 20,
         color: 0x00FF00,
-        shape: 'spark'
+        shape: 'hex'
       }
     })
 
@@ -123,24 +166,26 @@ function huntersAndPrey({ height, width }) {
         index: i,
         isStatic: true,
         onResourceWon: _onResourceWon,
-        maxClaimTimer: 100
+        maxClaimTimer: 100,
+        executePayoffMatrix: payoffMatrix
       })
     }
     for (let i = 0; i < NUM_DOVES; i++) {
       const location = new Flora.Vector(
-        Flora.Utils.getRandomNumber(world.width * 0.1, world.width * 0.4),
-        Flora.Utils.getRandomNumber(world.height * 0.1, world.height * 0.2)
+        Flora.Utils.getRandomNumber(world.width * 0.1, world.width * 0.9),
+        Flora.Utils.getRandomNumber(world.height * 0.1, world.height * 0.9)
       )
       this.add('Walker', {
         name: 'Dove',
         type: 'Dove',
+        life: LIFE_TOTAL,
         location,
         index: i,
         // remainsOnScreen: true,
         perlinSpeed: 0.001,
         motorSpeed: 2,
         minSpeed: 1,
-        maxSpeed: 4,
+        maxSpeed: 3,
         sensors: [
           this.add('Sensor', {
             type: 'Food',
@@ -161,17 +206,18 @@ function huntersAndPrey({ height, width }) {
 
     for (var i = 0; i < NUM_HAWKS; i++) {
       const location = new Flora.Vector(
-        Flora.Utils.getRandomNumber(world.width * 0.6, world.width * 0.9),
-        Flora.Utils.getRandomNumber(world.height * 0.8, world.height * 0.9)
+        Flora.Utils.getRandomNumber(world.width * 0.1, world.width * 0.9),
+        Flora.Utils.getRandomNumber(world.height * 0.1, world.height * 0.9)
       )
       this.add('Walker', {
         name: 'Hawk',
         type: 'Hawk',
+        life: LIFE_TOTAL,
         location,
         index: i,
         motorSpeed: 2,
         minSpeed: 1,
-        maxSpeed: 2,
+        maxSpeed: 5,
         // flocking: true,
         sensors: [
           this.add('Sensor', {
