@@ -52,9 +52,9 @@ export const createPointCloud = ({
     positions[(i * 3) + 1] = 0
     positions[(i * 3) + 2] = 0
 
-    colors[i * 3] = 10
-    colors[(i * 3) + 1] = 10
-    colors[(i * 3) + 2] = 10
+    colors[i * 3] = 0
+    colors[(i * 3) + 1] = 0
+    colors[(i * 3) + 2] = 0
 
     allocatedFlags[i] = false
   }
@@ -84,7 +84,6 @@ export const addPoint = ({
   if (index < 0 || index > MAX_POINTS) {
     return console.error('Invalid array index for point', index)
   }
-  console.log('position', position)
 
   // const firstAvailableIndex = _.findIndex(geometry.userData.allocatedFlags, allocated => !allocated) * 3
   // console.log('firstAvailableIndex', firstAvailableIndex)

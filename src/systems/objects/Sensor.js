@@ -172,7 +172,6 @@ Sensor.prototype.getBehavior = function() {
   switch (this.behavior) {
     case 'EAT':
       return function(sensor, target) {
-
         /**
          * CONSUME
          * If inside the target, target shrinks.
@@ -192,38 +191,6 @@ Sensor.prototype.getBehavior = function() {
             sensor.onConsume(sensor, target)
           }
           return
-        } else if (false) {
-          /**
-            * AGGRESSIVE
-            * Steer and arrive at target. Aggressive agents will hit their target.
-            */
-
-          // velocity = difference in location
-          var desiredVelocity = Vector.VectorSub(target.location, this.location)
-
-          // get distance to target
-          var distanceToTarget = desiredVelocity.mag()
-
-          if (distanceToTarget < this.width * 2) {
-
-            // normalize desiredVelocity so we can adjust. ie: magnitude = 1
-            desiredVelocity.normalize()
-
-            // as agent gets closer, velocity decreases
-            var m = distanceToTarget / this.maxSpeed
-
-            // extend desiredVelocity vector
-            desiredVelocity.mult(m)
-
-          }
-
-          // subtract current velocity from desired to create a steering force
-          desiredVelocity.sub(this.velocity)
-
-          // limit to the maxSteeringForce
-          desiredVelocity.limit(this.maxSteeringForce)
-
-          return desiredVelocity
         }
       }
 
@@ -326,7 +293,6 @@ Sensor.prototype.getBehavior = function() {
 
     case 'AGGRESSIVE':
       return function(sensor, target) {
-
         /**
          * AGGRESSIVE
          * Steer and arrive at target. Aggressive agents will hit their target.
@@ -531,6 +497,10 @@ Sensor.prototype.getBehavior = function() {
  * @return {Boolean} true if sensor's range intersects target.
  */
 Sensor.prototype._sensorActive = function(target) {
+
+  if (target.type === 'Food' && target.consumed) {
+    return false;
+  }
 
   // Two circles intersect if distance bw centers is less than the sum of the radii.
   var distance = Vector.VectorDistance(this.location, target.location),

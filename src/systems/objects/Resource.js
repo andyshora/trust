@@ -6,7 +6,7 @@ import {
 import _ from 'lodash'
 
 import Item from './Item'
-// import System from './System';
+import System from './System';
 
 /**
  * Creates a new Resource.
@@ -50,11 +50,13 @@ Resource.prototype.init = function(world, opt_options) {
   this.pointToParentDirection = typeof options.pointToParentDirection === 'undefined' ? true : options.pointToParentDirection
   this.type = options.type
   this.offsetDistance = typeof options.offsetDistance === 'undefined' ? 0 : options.offsetDistance
+  this.onResourceWon =  typeof options.onResourceWon === 'function' ? options.onResourceWon : null
   this.offsetAngle = options.offsetAngle || 0
   this.isStatic = !!options.isStatic
   this.claims = []
-  this.maxClaimTimer = 200
+  this.maxClaimTimer = options.maxClaimTimer ||200
   this.claimTimer = 0
+  this.consumed = false
 }
 
 Resource.prototype.newClaim = function(newClaimer) {
@@ -86,6 +88,10 @@ Resource.prototype.setWinner = function(claimer) {
   this.claims = []
   this.consumed = true
 
+  if (typeof this.onResourceWon === 'function') {
+    this.onResourceWon(this)
+  }
+  // System.remove(this, { list: this.world.resources })
 }
 
 Resource.prototype.step = function() {

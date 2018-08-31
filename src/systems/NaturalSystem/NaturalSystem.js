@@ -1,6 +1,7 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import loop from 'raf-loop'
+import _ from 'lodash'
 
 import {
   // AmbientLight,
@@ -38,24 +39,46 @@ import Walker from '../objects/Walker'
 const DEBUG = false
 const DEBUG_LIGHTS = false
 
-const NUM_HAWKS = 1
-const NUM_DOVES = 1
-const NUM_RESOURCES = 1
-const SENSOR_AGGRESSIVE = 1000
+const NUM_HAWKS = 5
+const NUM_DOVES = 5
+const NUM_RESOURCES = 100
+const SENSOR_AGGRESSIVE = 100
 const SENSOR_EAT = 50
+
+const RESOURCES_REGENERATE = false
 
 let foodEaten = 0
 
 const _onConsume = (sensor, resource) => {
-  const actorClaimingFood = sensor.parent
-  resource.newClaim(actorClaimingFood)
-  // console.log('winner eats', winner.id, winner.FoodLevel)
-  // foodEaten += 1
-  // console.warn('foodEaten', foodEaten)
+  resource.newClaim(sensor.parent)
+}
 
-  // System.remove(resource, {
-  //   list: resource.world.resources
-  // })
+function _onResourceWon(resource) {
+  const numResources = resource.world.resources.length
+  System.remove(resource, {
+    list: resource.world.resources
+  })
+
+  const availableResources = _.filter(resource.world.resources, r => !r.consumed)
+  console.log('availableResources', availableResources.length)
+
+  // add a new resource
+  const location = new Flora.Vector(
+    Flora.Utils.getRandomNumber(resource.world.width * 0.1, resource.world.width * 0.9),
+    Flora.Utils.getRandomNumber(resource.world.height * 0.1, resource.world.height * 0.9)
+  )
+
+  if (RESOURCES_REGENERATE) {
+    System.add('Resource', {
+      name: 'Food',
+      type: 'Food',
+      location,
+      index: numResources + 1,
+      isStatic: true,
+      onResourceWon: _onResourceWon,
+      maxClaimTimer: 100
+    })
+  }
 }
 
 function huntersAndPrey({ height, width }) {
@@ -82,7 +105,7 @@ function huntersAndPrey({ height, width }) {
         shape: 'spark'
       },
       Resource: {
-        pointSize: 60,
+        pointSize: 20,
         color: 0x00FF00,
         shape: 'spark'
       }
@@ -98,7 +121,9 @@ function huntersAndPrey({ height, width }) {
         type: 'Food',
         location,
         index: i,
-        isStatic: true
+        isStatic: true,
+        onResourceWon: _onResourceWon,
+        maxClaimTimer: 100
       })
     }
     for (let i = 0; i < NUM_DOVES; i++) {

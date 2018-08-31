@@ -8,6 +8,7 @@ var Vector = require('vector2d-lib')
  * @param {string} opt_name The item's class name.
  */
 function Item() {
+  console.warn('_idCount ', Item._idCount)
   Item._idCount++
 }
 
