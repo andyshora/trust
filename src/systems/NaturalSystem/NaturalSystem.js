@@ -39,9 +39,9 @@ import Walker from '../objects/Walker'
 const DEBUG = false
 const DEBUG_LIGHTS = false
 
-const NUM_HAWKS = 2
-const NUM_DOVES = 10
-const NUM_RESOURCES = 100
+const NUM_HAWKS = 10
+const NUM_DOVES = 50
+const NUM_RESOURCES = 200
 const SENSOR_AGGRESSIVE = 100
 const SENSOR_EAT = 50
 const FIGHT_COST = 20
@@ -138,17 +138,17 @@ function huntersAndPrey({ height, width }) {
       gravity: new Flora.Vector(),
       c: 0,
       Hawk: {
-        pointSize: 60,
+        pointSize: 20,
         color: 0xFF0000,
         shape: 'disc'
       },
       Dove: {
-        pointSize: 60,
+        pointSize: 20,
         color: 0xFFFFFF,
         shape: 'disc'
       },
       Resource: {
-        pointSize: 20,
+        pointSize: 10,
         color: 0x00FF00,
         shape: 'hex'
       }
