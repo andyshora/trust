@@ -2,8 +2,9 @@ import React, { Component } from 'react'
 import ContainerDimensions from 'react-container-dimensions'
 import keydown from 'react-keydown'
 
-// Components
+// Views
 import ActorIntro from '../ActorIntro'
+import Results from '../Results'
 
 // Views
 import NaturalSystem from '../../systems/NaturalSystem'
@@ -72,9 +73,10 @@ const STAGES = [
 class App extends Component {
   state = {
     activeStage: STAGES[6],
+    prevStage: -1,
     showSystem: true,
     stage: 0,
-    prevStage: -1
+    systemResults: []
   }
   @keydown('right')
   nextStage() {
@@ -113,12 +115,18 @@ class App extends Component {
       showSystem: !this.state.showSystem
     })
   }
+  _handleSystemResultsChange = data => {
+    this.setState({
+      systemResults: data
+    })
+  }
   render() {
     const {
       activeStage,
       prevStage,
       showSystem,
-      stage
+      stage,
+      systemResults
     } = this.state
     const copy = COPY[activeStage.actor]
     return (
@@ -130,7 +138,8 @@ class App extends Component {
                 {({ height, width }) => (
                   <NaturalSystem
                     height={height * 0.8}
-                    width={width * 0.8} />
+                    width={width * 0.8}
+                    resultsCallback={this._handleSystemResultsChange} />
                 )}
               </ContainerDimensions>
             </SystemWrapper>
@@ -147,6 +156,9 @@ class App extends Component {
             )}
           </ContainerDimensions>
         }
+        {activeStage.type === 'system' && (
+          <Results data={systemResults} />
+        )}
         <NavWrapper>
           <button onClick={this._handleButtonClick}>Next</button>
           <button onClick={this._handleSystemButtonClick}>{showSystem ? 'Hide' : 'Show'} System</button>

@@ -121,10 +121,13 @@ function _onResourceWon(resource) {
   const hawkLife = _.sumBy(System.firstWorld().agents, w => w.life)
   console.log('doveLife (total, average)', doveLife / NUM_DOVES)
   console.log('hawkLife (total, average)', hawkLife / NUM_HAWKS, `(${fightCount} fights)`)
-
+  resource.world.options.resultsCallback([
+    { actor: 'Dove', lifeAverage: doveLife / NUM_DOVES },
+    { actor: 'Hawk', lifeAverage: hawkLife / NUM_HAWKS, fights: fightCount }
+  ])
 }
 
-function huntersAndPrey({ height, width }) {
+function huntersAndPrey({ height, resultsCallback, width }) {
   System.setup(function() {
     System.Classes = {
       Item: Item,
@@ -137,6 +140,7 @@ function huntersAndPrey({ height, width }) {
       height,
       gravity: new Flora.Vector(),
       c: 0,
+      resultsCallback,
       Hawk: {
         pointSize: 20,
         color: 0xFF0000,
@@ -262,6 +266,7 @@ class NaturalSystem extends Component {
     const {
       autoStartAnimation,
       height,
+      resultsCallback,
       width
     } = this.props
     if (this._container) {
@@ -270,7 +275,8 @@ class NaturalSystem extends Component {
 
       huntersAndPrey({
         height: height,
-        width: width
+        width: width,
+        resultsCallback: typeof resultsCallback === 'function' && resultsCallback
       })
 
       this._renderer = new WebGLRenderer({ antialias: true })
@@ -412,11 +418,13 @@ class NaturalSystem extends Component {
 NaturalSystem.propTypes = {
   autoStartAnimation: PropTypes.bool,
   height: PropTypes.number.isRequired,
+  resultsCallback: PropTypes.func,
   width: PropTypes.number.isRequired
 }
 
 NaturalSystem.defaultProps = {
-  autoStartAnimation: true
+  autoStartAnimation: true,
+  resultsCallback: null
 }
 
 export default NaturalSystem
