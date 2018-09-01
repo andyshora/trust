@@ -146,12 +146,12 @@ System.add = function(opt_klass, opt_options, opt_world) {
     records = this._records, obj
 
   // recycle object if one is available; obj must be an instance of the same class
-  for (var i = 0, max = System._pool.length; i < max; i++) {
-    if (System._pool[i].name === klass) {
-      obj = System._cleanObj(System._pool.splice(i, 1)[0])
-      break
-    }
-  }
+  // for (var i = 0, max = System._pool.length; i < max; i++) {
+  //   if (System._pool[i].name === klass) {
+  //     obj = System._cleanObj(System._pool.splice(i, 1)[0])
+  //     break
+  //   }
+  // }
   if (!obj) {
     if (klass.toLowerCase() === 'world') {
       obj = new World(options)

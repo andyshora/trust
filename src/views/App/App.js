@@ -71,8 +71,8 @@ const STAGES = [
 
 class App extends Component {
   state = {
-    activeStage: STAGES[0],
-    showSystem: false,
+    activeStage: STAGES[6],
+    showSystem: true,
     stage: 0,
     prevStage: -1
   }

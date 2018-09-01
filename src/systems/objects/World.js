@@ -95,42 +95,30 @@ World.prototype.init = function(world, opt_options) {
 
 World.prototype.removeItem = function(item, data) {
   let index = -1
+  const itemToRemove = item
+
   if (data && data.list) {
-    index = _.findIndex(data.list, i => i.id === item.id)
-    // splice item from list
-    const removedItems = _.remove(data.list, i => i.id === item.id)
-    // if (removedItems) {
-    //   console.warn('removedItems', removedItems);
-    // }
+    index = _.findIndex(data.list, i => i.id === itemToRemove.id)
+    const item = data.list[index]
+    console.warn(`Resource ${item.id} consumed, and is no longer active in this world`)
   }
 
   // remove vertex in point cloud
   if (index !== -1 && item.name in this.clouds) {
     const pointCloud = this.clouds[item.name]
-    // const removedVertex = _.remove(pointCloud.geometry.vertices, (vertex, i) => i === index);
-    // const removedFragment = _.remove(pointCloud.geometry.colors, (vertex, i) => i === index);
 
-    // pointCloud.geometry.vertices.splice(index, 1);
-    // pointCloud.geometry.colors.splice(index, 1);
-    //
-    // pointCloud.geometry.verticesNeedUpdate = true;
-    // pointCloud.geometry.colorsNeedUpdate = true;
-    // todo - why isnt this updating in the scene?
-    // underlying buffer geometry is not being updated when we splice out vertices
+    // todo - do not change length of array buffer - super expensive
+    // just hide the item
+    pointCloud.geometry.attributes.color.array[(index * 3)] = 0
+    pointCloud.geometry.attributes.color.array[(index * 3) + 1] = 0
+    pointCloud.geometry.attributes.color.array[(index * 3) + 2] = 0
+
+    pointCloud.geometry.attributes.position.array[(index * 3)] = 0
+    pointCloud.geometry.attributes.position.array[(index * 3) + 1] = 0
+    pointCloud.geometry.attributes.position.array[(index * 3) + 2] = 0
 
     pointCloud.geometry.attributes.position.needsUpdate = true
     pointCloud.geometry.attributes.color.needsUpdate = true
-
-    // pointCloud.geometry.attributes.position.needsUpdate = true;
-
-    // console.log('Resource vertices', this.clouds.Resource.geometry.vertices.length);
-
-    if (!this.clouds.Resource.geometry.vertices.length) {
-      // console.log(this.clouds.Resource.geometry);
-      // debugger;
-    } else {
-      // console.log('Resource vertices', this.clouds.Resource.geometry.vertices);
-    }
   }
 }
 
@@ -144,7 +132,6 @@ World.prototype.add = function(item) {
   // }
   switch (item.type) {
     case 'Dove':
-      console.log('adding dove', item, item.location)
       this.walkers.push(item)
       // add a vertex to the cloud to represent Dove's position
       // this.clouds.Dove.geometry.vertices.push(new Vector3(item.location.x, item.location.y, 0));
