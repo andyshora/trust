@@ -39,7 +39,7 @@ import Walker from '../objects/Walker'
 const DEBUG = false
 const DEBUG_LIGHTS = false
 
-const NUM_HAWKS = 10
+const NUM_HAWKS = 5
 const NUM_DOVES = 50
 const NUM_RESOURCES = 200
 const SENSOR_AGGRESSIVE = 100
@@ -48,7 +48,7 @@ const FIGHT_COST = 20
 const WIN_GAIN = 8
 const LIFE_TOTAL = 100
 
-const RESOURCES_REGENERATE = false
+const RESOURCES_REGENERATE = true
 
 let foodEaten = 0
 let fightCount = 0

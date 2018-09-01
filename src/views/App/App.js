@@ -72,9 +72,8 @@ const STAGES = [
 
 class App extends Component {
   state = {
-    activeStage: STAGES[6],
+    activeStage: STAGES[0],
     prevStage: -1,
-    showSystem: true,
     stage: 0,
     systemResults: []
   }
@@ -102,19 +101,6 @@ class App extends Component {
       prevStage: stage
     })
   }
-  _handleButtonClick = () => {
-    const { stage } = this.state
-    const nextStage = stage === STAGES.length - 1 ? 0 : stage + 1
-    this.setState({
-      stage: nextStage,
-      prevStage: stage
-    })
-  }
-  _handleSystemButtonClick = () => {
-    this.setState({
-      showSystem: !this.state.showSystem
-    })
-  }
   _handleSystemResultsChange = data => {
     this.setState({
       systemResults: data
@@ -124,7 +110,6 @@ class App extends Component {
     const {
       activeStage,
       prevStage,
-      showSystem,
       stage,
       systemResults
     } = this.state
@@ -160,8 +145,6 @@ class App extends Component {
           <Results data={systemResults} />
         )}
         <NavWrapper>
-          <button onClick={this._handleButtonClick}>Next</button>
-          <button onClick={this._handleSystemButtonClick}>{showSystem ? 'Hide' : 'Show'} System</button>
         </NavWrapper>
       </AppWrapper>
     )
