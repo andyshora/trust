@@ -36,19 +36,21 @@ import Sensor from '../objects/Sensor'
 import System from '../objects/System'
 import Walker from '../objects/Walker'
 
+import { statsService } from '../../services/StatsService'
+
 const DEBUG = false
 const DEBUG_LIGHTS = false
 
-const NUM_HAWKS = 5
-const NUM_DOVES = 50
-const NUM_RESOURCES = 200
+const NUM_HAWKS = 10
+const NUM_DOVES = 40
+const NUM_RESOURCES = 100
 const SENSOR_AGGRESSIVE = 100
 const SENSOR_EAT = 50
 const FIGHT_COST = 20
 const WIN_GAIN = 8
 const LIFE_TOTAL = 100
 
-const RESOURCES_REGENERATE = true
+const RESOURCES_REGENERATE = false
 
 let foodEaten = 0
 let fightCount = 0
@@ -57,6 +59,7 @@ let fightCount = 0
 const payoffMatrix = actors => {
   if (actors.length === 1) {
     // no competition - winner takes all
+    statsService.recordUnchallenged({ winner: actors[0] })
     return {
       costs: [0, 0],
       gains: [WIN_GAIN, 0]
@@ -70,14 +73,18 @@ const payoffMatrix = actors => {
       // the early bird gets the worm
       costs = [FIGHT_COST / 2, FIGHT_COST / 2]
       fightCount++
+      statsService.recordEncounter({ actors: str, winner: 'Hawk' })
       break
     case 'HawkDove':
       gains = [WIN_GAIN, 0]
+      statsService.recordEncounter({ actors: 'DoveHawk', winner: 'Hawk' })
       break
     case 'DoveHawk':
       gains = [0, WIN_GAIN]
+      statsService.recordEncounter({ actors: str, winner: 'Hawk' })
       break
     default:
+      statsService.recordEncounter({ actors: str, winner: 'Dove' })
       break
   }
   return {
@@ -119,15 +126,22 @@ function _onResourceWon(resource) {
 
   const doveLife = _.sumBy(System.firstWorld().walkers, w => w.life)
   const hawkLife = _.sumBy(System.firstWorld().agents, w => w.life)
-  console.log('doveLife (total, average)', doveLife / NUM_DOVES)
-  console.log('hawkLife (total, average)', hawkLife / NUM_HAWKS, `(${fightCount} fights)`)
-  resource.world.options.resultsCallback([
-    { actor: 'Dove', lifeAverage: doveLife / NUM_DOVES },
-    { actor: 'Hawk', lifeAverage: hawkLife / NUM_HAWKS, fights: fightCount }
+  // console.log('doveLife (total, average)', doveLife / NUM_DOVES)
+  // console.log('hawkLife (total, average)', hawkLife / NUM_HAWKS, `(${fightCount} fights)`)
+  statsService.setLifeTotals([
+    { actor: 'Dove', value: doveLife / NUM_DOVES  },
+    { actor: 'Hawk', value: hawkLife / NUM_HAWKS  }
   ])
+  resource.world.options.resultsCallback(statsService.stats)
 }
 
 function huntersAndPrey({ height, resultsCallback, width }) {
+  statsService.init({
+    totals: {
+      Dove: NUM_DOVES,
+      Hawk: NUM_HAWKS
+    }
+  })
   System.setup(function() {
     System.Classes = {
       Item: Item,

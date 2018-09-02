@@ -10,5 +10,14 @@ export const ResultsWrapper = styled.div`
   bottom: 1rem;
   z-index: 1;
   text-align: left;
-  width: 200px;
+
+  > h3 {
+    text-align: center;
+  }
+`
+export const ResultsTable = styled.table`
+  margin: 0 1rem 1rem
+  th, td {
+    padding: 0.5rem
+  }
 `

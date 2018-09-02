@@ -1,7 +1,7 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 
-import Dove from '../../actors/Dove'
+import Actor from '../../actors/Actor'
 
 // Styles
 import {
@@ -13,7 +13,10 @@ import {
   ActorWrapper
 } from './ActorIntro.styles'
 
-const _getBehaviour = stage => {
+const _getBehaviour = (stage, names) => {
+  if (names.length > 1) {
+    return 'meeting'
+  }
   let behaviour = ''
   switch (stage) {
     case 1:
@@ -48,7 +51,7 @@ class ActorIntro extends Component {
     const {
       copy,
       height,
-      name,
+      names,
       prevStage,
       stage,
       width
@@ -62,11 +65,11 @@ class ActorIntro extends Component {
 
     const actorComponent = (
       <ActorWrapper {...actorDimensions}>
-        <Dove
+        <Actor
           ref={this._actor}
-          name={name.toLowerCase()}
-          behaviour={_getBehaviour(stage)}
-          cameraZ={stage === 2 ? 1500 : 500}
+          names={names}
+          behaviour={_getBehaviour(stage, names)}
+          cameraZ={stage === 2 || names.length > 1 ? 1500 : 500}
           {...actorDimensions} />
       </ActorWrapper>
     )
@@ -104,7 +107,7 @@ class ActorIntro extends Component {
 ActorIntro.propTypes = {
   copy: PropTypes.arrayOf(PropTypes.object).isRequired,
   height: PropTypes.number.isRequired,
-  name: PropTypes.string.isRequired,
+  names: PropTypes.arrayOf(PropTypes.string).isRequired,
   prevStage: PropTypes.number,
   stage: PropTypes.number,
   width: PropTypes.number.isRequired

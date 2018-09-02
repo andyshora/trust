@@ -57,25 +57,32 @@ const COPY = {
         'If the opposition does not withdraw, you are badly hurt.'
       ]
     }
+  ],
+  DoveHawk: [
+    {
+      heading: 'Dove vs Hawk',
+      lines: ['Hawk takes all.']
+    }
   ]
 }
 
 const STAGES = [
-  { type: 'intro', actor: 'Dove', stage: 0 },
-  { type: 'intro', actor: 'Dove', stage: 1 },
-  { type: 'intro', actor: 'Dove', stage: 2 },
-  { type: 'intro', actor: 'Hawk', stage: 3 },
-  { type: 'intro', actor: 'Hawk', stage: 4 },
-  { type: 'intro', actor: 'Hawk', stage: 5 },
-  { type: 'system', stage: 6 }
+  { type: 'intro', copyKey: 'Dove', names: ['dove'], stage: 0 },
+  { type: 'intro', copyKey: 'Dove', names: ['dove'], stage: 1 },
+  { type: 'intro', copyKey: 'Dove', names: ['dove', 'dove'], stage: 2 },
+  { type: 'intro', copyKey: 'Hawk', names: ['hawk'], stage: 3 },
+  { type: 'intro', copyKey: 'Hawk', names: ['hawk'], stage: 4 },
+  { type: 'intro', copyKey: 'Hawk', names: ['hawk', 'hawk'], stage: 5 },
+  { type: 'intro', copyKey: 'DoveHawk', names: ['dove', 'hawk'], stage: 6 },
+  { type: 'system', stage: 7 }
 ]
 
 class App extends Component {
   state = {
-    activeStage: STAGES[0],
+    activeStage: STAGES[7],
     prevStage: -1,
     stage: 0,
-    systemResults: []
+    systemResults: {}
   }
   @keydown('right')
   nextStage() {
@@ -113,7 +120,7 @@ class App extends Component {
       stage,
       systemResults
     } = this.state
-    const copy = COPY[activeStage.actor]
+    const copy = COPY[activeStage.copyKey]
     return (
       <AppWrapper>
         {activeStage.type === 'system'
@@ -133,7 +140,7 @@ class App extends Component {
             {({ height, width }) => (
               <ActorIntro
                 height={height}
-                name={activeStage.actor}
+                names={activeStage.names}
                 copy={copy}
                 prevStage={prevStage % 3}
                 stage={stage % 3}
