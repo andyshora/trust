@@ -78,6 +78,12 @@ const STAGES = [
 ]
 
 class App extends Component {
+  constructor(props) {
+    super(props)
+    this.system = React.createRef()
+
+    this._onResetTapped = this._onResetTapped.bind(this)
+  }
   state = {
     activeStage: STAGES[7],
     prevStage: -1,
@@ -108,6 +114,11 @@ class App extends Component {
       prevStage: stage
     })
   }
+  _onResetTapped() {
+    if (this.system.current && typeof this.system.current.reset === 'function') {
+      this.system.current.reset()
+    }
+  }
   _handleSystemResultsChange = data => {
     this.setState({
       systemResults: data
@@ -131,7 +142,8 @@ class App extends Component {
                   <NaturalSystem
                     height={height * 0.8}
                     width={width * 0.8}
-                    resultsCallback={this._handleSystemResultsChange} />
+                    resultsCallback={this._handleSystemResultsChange}
+                    ref={this.system} />
                 )}
               </ContainerDimensions>
             </SystemWrapper>
@@ -152,6 +164,7 @@ class App extends Component {
           <Results data={systemResults} />
         )}
         <NavWrapper>
+          <button onClick={this._onResetTapped}>Reset</button>
         </NavWrapper>
       </AppWrapper>
     )

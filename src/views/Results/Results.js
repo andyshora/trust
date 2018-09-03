@@ -1,5 +1,6 @@
 import React from 'react'
 import PropTypes from 'prop-types'
+import _ from 'lodash'
 
 // Styles
 import {
@@ -19,8 +20,8 @@ const Results = ({ data }) => {
           <tr>
             <th>Actor</th>
             <th>Encounters</th>
-            <th>Won (Unchallenged)</th>
             <th>Fights</th>
+            <th>Meals (Unchallenged)</th>
             <th>Life Exp</th>
           </tr>
         </thead>
@@ -28,16 +29,16 @@ const Results = ({ data }) => {
           <tr>
             <td>Dove</td>
             <td>{data.encounters.DoveDove}</td>
-            <td>{data.wins.Dove + data.unchallenged.Dove} ({data.unchallenged.Dove})</td>
             <td>-</td>
-            <td>{data.avgLifeTotals.Dove}</td>
+            <td>{data.wins.Dove + data.unchallenged.Dove} ({data.unchallenged.Dove})</td>
+            <td>{_.round(data.avgLifeTotals.Dove, 1)}</td>
           </tr>
           <tr>
             <td>Hawk</td>
             <td>{data.encounters.HawkHawk + data.encounters.DoveHawk}</td>
-            <td>{data.wins.Hawk + data.unchallenged.Hawk} ({data.unchallenged.Hawk})</td>
             <td>{data.encounters.HawkHawk}</td>
-            <td>{data.avgLifeTotals.Hawk}</td>
+            <td>{data.wins.Hawk + data.unchallenged.Hawk} ({data.unchallenged.Hawk})</td>
+            <td>{_.round(data.avgLifeTotals.Hawk, 1)}</td>
           </tr>
         </tbody>
       </ResultsTable>
@@ -58,6 +59,8 @@ const Results = ({ data }) => {
           </tr>
         </tbody>
       </ResultsTable>
+      <h3>Cost of FIGHTING</h3>
+      <p>Hawks are each experiencing {_.round(data.avgDamage, 1)} damage, each.</p>
     </ResultsWrapper>
   )
 }

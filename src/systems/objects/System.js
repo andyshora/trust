@@ -413,8 +413,8 @@ System._keyup = function(e) {
   var i, max, world, worlds = System.allWorlds()
 
   switch(e.keyCode) {
-    case 39:
-      // right arrow
+    case 70:
+      // f
       console.log('step')
       System._stepForward()
       break

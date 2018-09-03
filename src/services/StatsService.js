@@ -19,6 +19,9 @@ const _initialStats = {
   wins: {
     Dove: 0,
     Hawk: 0
+  },
+  params: {
+
   }
 }
 
@@ -26,10 +29,13 @@ class StatsService {
   constructor() {
     this._stats = Object.assign({}, _initialStats)
   }
-  init({ totals }) {
-    console.log('init', totals)
+  init({ life, totals }) {
     this._stats.totalActors.Dove = totals.Dove
     this._stats.totalActors.Hawk = totals.Hawk
+
+    this._stats.params.fightCost = life.fightCost
+    this._stats.params.winGain = life.winGain
+    this._stats.params.startingLife = life.startingLife
   }
   recordUnchallenged({ winner }) {
     console.log('recordUnchallenged', winner)
@@ -65,8 +71,15 @@ class StatsService {
   clear() {
     this._stats = Object.assign({}, _initialStats)
   }
+  get conslusions() {
+    const avgDamage = (this._stats.params.fightCost * this._stats.encounters.HawkHawk) / this._stats.totalActors.Hawk
+    return {
+      avgDamage
+    }
+  }
   get stats() {
-    return this._stats
+    const avgDamage = (this._stats.params.fightCost * this._stats.encounters.HawkHawk) / this._stats.totalActors.Hawk
+    return {...this._stats, avgDamage}
   }
 }
 

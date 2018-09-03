@@ -41,8 +41,8 @@ import { statsService } from '../../services/StatsService'
 const DEBUG = false
 const DEBUG_LIGHTS = false
 
-const NUM_HAWKS = 10
-const NUM_DOVES = 40
+const NUM_HAWKS = 15
+const NUM_DOVES = 30
 const NUM_RESOURCES = 100
 const SENSOR_AGGRESSIVE = 100
 const SENSOR_EAT = 50
@@ -103,7 +103,7 @@ function _onResourceWon(resource) {
     list: resource.world.resources
   })
 
-  const availableResources = _.filter(resource.world.resources, r => !r.consumed)
+  // const availableResources = _.filter(resource.world.resources, r => !r.consumed)
 
   // add a new resource
   const location = new Flora.Vector(
@@ -126,8 +126,6 @@ function _onResourceWon(resource) {
 
   const doveLife = _.sumBy(System.firstWorld().walkers, w => w.life)
   const hawkLife = _.sumBy(System.firstWorld().agents, w => w.life)
-  // console.log('doveLife (total, average)', doveLife / NUM_DOVES)
-  // console.log('hawkLife (total, average)', hawkLife / NUM_HAWKS, `(${fightCount} fights)`)
   statsService.setLifeTotals([
     { actor: 'Dove', value: doveLife / NUM_DOVES  },
     { actor: 'Hawk', value: hawkLife / NUM_HAWKS  }
@@ -140,6 +138,11 @@ function huntersAndPrey({ height, resultsCallback, width }) {
     totals: {
       Dove: NUM_DOVES,
       Hawk: NUM_HAWKS
+    },
+    life: {
+      fightCost: FIGHT_COST,
+      winGain: WIN_GAIN,
+      startingLife: WIN_GAIN
     }
   })
   System.setup(function() {
@@ -166,9 +169,9 @@ function huntersAndPrey({ height, resultsCallback, width }) {
         shape: 'disc'
       },
       Resource: {
-        pointSize: 10,
+        pointSize: 50,
         color: 0x00FF00,
-        shape: 'hex'
+        shape: 'spark'
       }
     })
 
@@ -413,6 +416,9 @@ class NaturalSystem extends Component {
     this._controls.update()
     this._camera.updateProjectionMatrix()
     this._renderer.render(this._scene, this._camera)
+  }
+  reset() {
+    System._resetSystem()
   }
   /**
    * This will be called externally, to render the scene
