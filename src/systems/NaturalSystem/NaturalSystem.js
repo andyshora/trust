@@ -37,13 +37,14 @@ import System from '../objects/System'
 import Walker from '../objects/Walker'
 
 import { statsService } from '../../services/StatsService'
+import { audioService } from '../../services/AudioService'
 
 const DEBUG = false
 const DEBUG_LIGHTS = false
 
-const NUM_HAWKS = 20
+const NUM_HAWKS = 10
 const NUM_DOVES = 30
-const NUM_RESOURCES = 100
+const NUM_RESOURCES = 200
 const SENSOR_AGGRESSIVE = 100
 const SENSOR_EAT = 50
 const FIGHT_COST = 20
@@ -66,6 +67,7 @@ const payoffMatrix = actors => {
       gains: [WIN_GAIN, 0]
     }
   }
+
   const str = actors.join('')
   let gains = [WIN_GAIN / 2, WIN_GAIN / 2]
   let costs = [0, 0]
@@ -74,10 +76,12 @@ const payoffMatrix = actors => {
       // the early bird gets the worm
       costs = [FIGHT_COST / 2, FIGHT_COST / 2]
       fightCount++
+      audioService.play('beep')
       statsService.recordEncounter({ actors: str, winner: 'Hawk' })
       break
     case 'HawkDove':
       gains = [WIN_GAIN, 0]
+      audioService.play('click')
       statsService.recordEncounter({ actors: 'DoveHawk', winner: 'Hawk' })
       break
     case 'DoveHawk':

@@ -2,6 +2,8 @@
   "name": "trust",
   "version": "0.1.0",
   "dependencies": {
+    "audio-loader": "^1.0.3",
+    "audio-play": "^2.2.0",
     "autoprefixer": "7.1.6",
     "babel-core": "6.26.0",
     "babel-eslint": "7.2.3",
