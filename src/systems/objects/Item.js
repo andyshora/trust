@@ -84,8 +84,8 @@ Item.prototype.init = function(world, opt_options) {
   this.angle = typeof this.angle !== 'undefined' ? this.angle
     : options.angle || 0
 
-  this.color = typeof this.color !== 'undefined' ? this.color
-    : options.color || [200, 200, 200]
+  this.color = options.color
+  this.size = options.size
 
   this.opacity = typeof this.opacity !== 'undefined' ? this.opacity
     : typeof options.opacity === 'undefined' ? 1 : options.opacity

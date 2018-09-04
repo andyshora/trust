@@ -139,8 +139,8 @@ World.prototype.add = function(item) {
       addPoint({
         index: item.index,
         geometry: this.clouds.Dove.geometry,
-        color: this.options.Dove.color,
-        size: this.options.Dove.pointSize,
+        color: item.color ? item.color : this.options.Dove.color,
+        size: item.size ? item.size : this.options.Dove.pointSize,
         position: [item.location.x, item.location.y, 0]
       })
       break
@@ -153,8 +153,8 @@ World.prototype.add = function(item) {
         addPoint({
           index: item.index,
           geometry: this.clouds.Resource.geometry,
-          color: this.options.Resource.color,
-          size: this.options.Resource.pointSize,
+          color: item.color ? item.color : this.options.Resource.color,
+          size: item.size ? item.size : this.options.Resource.pointSize,
           position: [item.location.x, item.location.y, 0]
         })
       } else if (item.name === 'Sensor') {
@@ -169,8 +169,8 @@ World.prototype.add = function(item) {
       addPoint({
         index: item.index,
         geometry: this.clouds.Hawk.geometry,
-        color: this.options.Hawk.color,
-        size: this.options.Hawk.pointSize,
+        color: item.color ? item.color : this.options.Hawk.color,
+        size: item.size ? item.size : this.options.Hawk.pointSize,
         position: [item.location.x, item.location.y, 0]
       })
       break

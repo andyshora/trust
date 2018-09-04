@@ -14,6 +14,8 @@ import '../../styles/generic'
 import {
   AppWrapper,
   NavWrapper,
+  SystemSidebar,
+  SystemViz,
   SystemWrapper
 } from './App.styles'
 
@@ -137,15 +139,24 @@ class App extends Component {
         {activeStage.type === 'system'
           ? (
             <SystemWrapper>
-              <ContainerDimensions>
-                {({ height, width }) => (
-                  <NaturalSystem
-                    height={height * 0.8}
-                    width={width * 0.8}
-                    resultsCallback={this._handleSystemResultsChange}
-                    ref={this.system} />
-                )}
-              </ContainerDimensions>
+              <SystemViz>
+                <ContainerDimensions>
+                  {({ height, width }) => (
+                    <NaturalSystem
+                      height={height}
+                      width={width}
+                      resultsCallback={this._handleSystemResultsChange}
+                      ref={this.system} />
+                  )}
+                </ContainerDimensions>
+              </SystemViz>
+              <SystemSidebar>
+                <Results data={systemResults} />
+                <NavWrapper>
+                  <button onClick={this._onResetTapped}>Reset</button>
+                </NavWrapper>
+              </SystemSidebar>
+
             </SystemWrapper>
           )
           : <ContainerDimensions>
@@ -160,12 +171,6 @@ class App extends Component {
             )}
           </ContainerDimensions>
         }
-        {activeStage.type === 'system' && (
-          <Results data={systemResults} />
-        )}
-        <NavWrapper>
-          <button onClick={this._onResetTapped}>Reset</button>
-        </NavWrapper>
       </AppWrapper>
     )
   }

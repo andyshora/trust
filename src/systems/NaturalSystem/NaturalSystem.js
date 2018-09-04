@@ -41,7 +41,7 @@ import { statsService } from '../../services/StatsService'
 const DEBUG = false
 const DEBUG_LIGHTS = false
 
-const NUM_HAWKS = 15
+const NUM_HAWKS = 20
 const NUM_DOVES = 30
 const NUM_RESOURCES = 100
 const SENSOR_AGGRESSIVE = 100
@@ -49,6 +49,7 @@ const SENSOR_EAT = 50
 const FIGHT_COST = 20
 const WIN_GAIN = 8
 const LIFE_TOTAL = 100
+const CAMERA_FOLLOWS_HAWK = false
 
 const RESOURCES_REGENERATE = false
 
@@ -183,6 +184,8 @@ function huntersAndPrey({ height, resultsCallback, width }) {
       this.add('Resource', {
         name: 'Food',
         type: 'Food',
+        color: 0x00FF00,
+        size: 50,
         location,
         index: i,
         isStatic: true,
@@ -199,6 +202,8 @@ function huntersAndPrey({ height, resultsCallback, width }) {
       this.add('Walker', {
         name: 'Dove',
         type: 'Dove',
+        size: 20,
+        color: 0xFFFFFF,
         life: LIFE_TOTAL,
         location,
         index: i,
@@ -230,15 +235,19 @@ function huntersAndPrey({ height, resultsCallback, width }) {
         Flora.Utils.getRandomNumber(world.width * 0.1, world.width * 0.9),
         Flora.Utils.getRandomNumber(world.height * 0.1, world.height * 0.9)
       )
+      const controlCamera = CAMERA_FOLLOWS_HAWK && !i
       this.add('Walker', {
         name: 'Hawk',
         type: 'Hawk',
+        size: 100,
+        color: 0xFF0000,
         life: LIFE_TOTAL,
         location,
         index: i,
         motorSpeed: 2,
         minSpeed: 1,
         maxSpeed: 5,
+        controlCamera,
         // flocking: true,
         sensors: [
           this.add('Sensor', {
@@ -411,6 +420,13 @@ class NaturalSystem extends Component {
   }
   _renderScene = dt => {
     // const { behaviour } = this.props
+    if (CAMERA_FOLLOWS_HAWK) {
+      const location = System.firstWorld().location
+      if (this._renderer.domElement) {
+        this._renderer.domElement.style.transform = `translate3d(${_.round(-location.x, 2)}px, ${_.round(-location.y, 2)}px, 0)`
+
+      }
+    }
 
     // do stuff here
     this._controls.update()

@@ -6,23 +6,18 @@ export const AppWrapper = styled.div`
 `
 
 export const NavWrapper = styled.div`
-  position: fixed;
-  bottom: 0;
-  left: 0;
   padding: 1rem;
-  z-index: 2;
-  width: 100%;
 `
-
 export const SystemWrapper = styled.div`
-  position: fixed;
-  top: 0;
-  left: 0;
-  height: 100%;
+  position: absolute;
   width: 100%;
+  height: 100%;
   z-index: 1;
   background: black;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  display: grid;
+  grid-template-columns: 1fr 500px;
+`
+export const SystemSidebar = styled.aside`
+`
+export const SystemViz = styled.div`
 `

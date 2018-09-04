@@ -42,7 +42,8 @@ Mover.prototype.init = function(world, opt_options) {
 
   var options = opt_options || {}
 
-  this.color = options.color || [255, 255, 255]
+  this.color = options.color
+  this.size = options.size
   this.pointToDirection = typeof options.pointToDirection === 'undefined' ? true : options.pointToDirection
   this.draggable = !!options.draggable
   this.parent = options.parent || null

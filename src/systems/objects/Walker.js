@@ -59,7 +59,8 @@ Walker.prototype.init = function(world, opt_options) {
   this.perlinAccelHigh = typeof options.perlinAccelHigh === 'undefined' ? 0.075 : options.perlinAccelHigh
   this.perlinOffsetX = typeof options.perlinOffsetX === 'undefined' ? Math.random() * 10000 : options.perlinOffsetX
   this.perlinOffsetY = typeof options.perlinOffsetY === 'undefined' ? Math.random() * 10000 : options.perlinOffsetY
-  this.color = options.color || [255, 150, 50]
+  this.color = options.color
+  this.size = options.size
   this.opacity = typeof options.opacity === 'undefined' ? 1 : options.opacity
   this.sensors = options.sensors || []
 
