@@ -35,11 +35,11 @@ const _getBehaviour = (stage, names) => {
 const _getActorDims = ({ height, stage, width }) => {
   switch (stage) {
     case 0:
-      return { width: width * 0.5, height: width * 0.5 * 0.6 }
+      return { width: width * 0.8, height: width * 0.8 * 0.6 }
     case 1:
-      return { width: width * 0.5, height: width * 0.5 * 0.6 }
+      return { width: width * 0.8, height: width * 0.8 * 0.6 }
     case 2:
-      return { width: width * 0.8, height: width * 0.8 * 0.3 }
+      return { width: width * 0.8, height: width * 0.8 * 0.6 }
     default:
       return
   }
@@ -80,21 +80,21 @@ class ActorIntro extends Component {
           <ActorSpin active={!stage} transitionOut={!prevStage}>
             <hgroup>
               <h1>{copy[stage].heading}</h1>
-              {copy[stage].lines.map((l, i) => <p key={i}>{l}</p>)}
+              {copy[stage].lines.map((l, i) => <h4 key={i}>{l}</h4>)}
             </hgroup>
             {!stage && actorComponent}
           </ActorSpin>
           <ActorDescription active={stage === 1} transitionOut={prevStage === 1}>
             <hgroup>
               <h1>{copy[stage].heading}</h1>
-              {copy[stage].lines.map((l, i) => <p key={i}>{l}</p>)}
+              {copy[stage].lines.map((l, i) => <h4 key={i}>{l}</h4>)}
             </hgroup>
             {stage === 1 && actorComponent}
           </ActorDescription>
           <ActorMeets active={stage === 2} transitionOut={prevStage === 2}>
             <hgroup>
               <h1>{copy[stage].heading}</h1>
-              {copy[stage].lines.map((l, i) => <p key={i}>{l}</p>)}
+              {copy[stage].lines.map((l, i) => <h4 key={i}>{l}</h4>)}
             </hgroup>
             {stage === 2 && actorComponent}
           </ActorMeets>

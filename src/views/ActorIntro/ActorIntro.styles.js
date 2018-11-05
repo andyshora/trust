@@ -24,19 +24,27 @@ const ActorIntroSection = styled.section`
   position: fixed;
   width: 100%;
   height: 100%;
-  padding: 1rem;
   display: grid;
   text-align: center;
 
   > hgroup {
     padding: 1rem 2rem;
     min-height: 200px;
+    margin: 2rem auto;
+
+    > h1 {
+      display: inline-block;
+      border-bottom: 1px solid white;
+    }
   }
 
   > div {
-    margin: 2rem auto;
+    margin: 5rem auto 2rem;
+
+    > div {
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
   }
-  ${media.fromLarge``}
 `
 
 export const ActorSpin = ActorIntroSection.extend`

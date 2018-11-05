@@ -9,7 +9,7 @@ export const NavWrapper = styled.div`
   padding: 1rem;
 `
 export const SystemWrapper = styled.div`
-  position: absolute;
+  position: fixed;
   width: 100%;
   height: 100%;
   z-index: 1;

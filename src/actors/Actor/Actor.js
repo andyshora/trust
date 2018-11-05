@@ -65,6 +65,18 @@ class Actor extends Component {
     super(props)
     this._container = React.createRef()
   }
+  componentWillUnmount() {
+    this.stopAnimation()
+    this._renderer = null
+    this._container = null
+    this._actorObj = null
+    this._animationEngine = null
+    this._controls = null
+    this._group = null
+    this._lightTarget = null
+    this._scene = null
+    this._camera = null
+  }
   componentDidMount() {
     const {
       autoStartAnimation,
@@ -310,9 +322,15 @@ class Actor extends Component {
         break
     }
 
-    this._controls.update()
-    this._camera.updateProjectionMatrix()
-    this._renderer.render(this._scene, this._camera)
+    if (this._controls) {
+      this._controls.update()
+    }
+    if (this._camera) {
+      this._camera.updateProjectionMatrix()
+    }
+    if (this._renderer) {
+      this._renderer.render(this._scene, this._camera)
+    }
   }
   /**
    * This will be called externally, to render the scene

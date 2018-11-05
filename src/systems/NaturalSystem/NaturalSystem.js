@@ -7,26 +7,26 @@ import {
   // AmbientLight,
   AxesHelper,
   // Box3,
-  BoxGeometry,
+  // BoxGeometry,
   DirectionalLight,
   DirectionalLightHelper,
-  Group,
-  Mesh,
-  MeshStandardMaterial,
+  // Group,
+  // Mesh,
+  // MeshStandardMaterial,
   Object3D,
   OrthographicCamera,
   // PerspectiveCamera,
-  PointLight,
-  PointLightHelper,
+  // PointLight,
+  // PointLightHelper,
   Scene,
-  SphereGeometry,
+  // SphereGeometry,
   // SpotLight,
   // SpotLightHelper,
-  Vector3,
+  // Vector3,
   WebGLRenderer
 } from 'three'
 
-import OrthographicTrackballControls from 'threejs-controls/OrthographicTrackballControls';
+import OrthographicTrackballControls from 'threejs-controls/OrthographicTrackballControls'
 import Flora from 'florajs'
 
 // FloraJS objects
@@ -36,32 +36,32 @@ import Sensor from '../objects/Sensor'
 import System from '../objects/System'
 import Walker from '../objects/Walker'
 
-import { statsService } from '../../services/StatsService'
-import { audioService } from '../../services/AudioService'
+import { statsService as stats } from '../../services/StatsService'
+import { audioService as audio } from '../../services/AudioService'
 
 const DEBUG = false
 const DEBUG_LIGHTS = false
 
-const NUM_HAWKS = 10
-const NUM_DOVES = 30
-const NUM_RESOURCES = 200
-const SENSOR_AGGRESSIVE = 100
-const SENSOR_EAT = 50
-const FIGHT_COST = 20
-const WIN_GAIN = 8
-const LIFE_TOTAL = 100
-const CAMERA_FOLLOWS_HAWK = false
+let NUM_HAWKS = 10
+let NUM_DOVES = 50
+let NUM_RESOURCES = 200
+let SENSOR_AGGRESSIVE = 100
+let SENSOR_EAT = 50
+let FIGHT_COST = 20
+let WIN_GAIN = 8
+let LIFE_TOTAL = 100
+let CAMERA_FOLLOWS_HAWK = false
 
-const RESOURCES_REGENERATE = false
+let RESOURCES_REGENERATE = true
 
-let foodEaten = 0
-let fightCount = 0
+// let foodEaten = 0
+// let fightCount = 0
 
 // the game theory payoff matrix
 const payoffMatrix = actors => {
   if (actors.length === 1) {
     // no competition - winner takes all
-    statsService.recordUnchallenged({ winner: actors[0] })
+    stats.recordUnchallenged({ winner: actors[0] })
     return {
       costs: [0, 0],
       gains: [WIN_GAIN, 0]
@@ -75,21 +75,23 @@ const payoffMatrix = actors => {
     case 'HawkHawk':
       // the early bird gets the worm
       costs = [FIGHT_COST / 2, FIGHT_COST / 2]
-      fightCount++
-      audioService.play('beep')
-      statsService.recordEncounter({ actors: str, winner: 'Hawk' })
+      // fightCount++
+      audio.play('click', { volume: 1 })
+      stats.recordEncounter({ actors: str, winner: 'Hawk' })
       break
     case 'HawkDove':
       gains = [WIN_GAIN, 0]
-      audioService.play('click')
-      statsService.recordEncounter({ actors: 'DoveHawk', winner: 'Hawk' })
+      // audio.play('button')
+      stats.recordEncounter({ actors: 'DoveHawk', winner: 'Hawk' })
       break
     case 'DoveHawk':
       gains = [0, WIN_GAIN]
-      statsService.recordEncounter({ actors: str, winner: 'Hawk' })
+      // audio.play('button')
+      stats.recordEncounter({ actors: str, winner: 'Hawk' })
       break
     default:
-      statsService.recordEncounter({ actors: str, winner: 'Dove' })
+      // audio.play('click')
+      stats.recordEncounter({ actors: str, winner: 'Dove' })
       break
   }
   return {
@@ -131,15 +133,43 @@ function _onResourceWon(resource) {
 
   const doveLife = _.sumBy(System.firstWorld().walkers, w => w.life)
   const hawkLife = _.sumBy(System.firstWorld().agents, w => w.life)
-  statsService.setLifeTotals([
+  stats.setLifeTotals([
     { actor: 'Dove', value: doveLife / NUM_DOVES  },
     { actor: 'Hawk', value: hawkLife / NUM_HAWKS  }
   ])
-  resource.world.options.resultsCallback(statsService.stats)
+  resource.world.options.resultsCallback(stats.stats)
+}
+
+function hawksOnly({ height, resultsCallback, width }) {
+  NUM_HAWKS = 10
+  NUM_DOVES = 0
+  NUM_RESOURCES = 10
+  SENSOR_AGGRESSIVE = 300
+  setupWorld({ height, resultsCallback, width })
+}
+
+function dovesOnly({ height, resultsCallback, width }) {
+  NUM_HAWKS = 0
+  NUM_DOVES = 10
+  NUM_RESOURCES = 10
+  SENSOR_AGGRESSIVE = 300
+  setupWorld({ height, resultsCallback, width })
 }
 
 function huntersAndPrey({ height, resultsCallback, width }) {
-  statsService.init({
+  NUM_HAWKS = 50
+  NUM_DOVES = 10
+  NUM_RESOURCES = 20
+  SENSOR_AGGRESSIVE = 100
+  setupWorld({ height, resultsCallback, width })
+}
+
+function setupWorld({ height, resultsCallback, width }) {
+  console.log('NUM_HAWKS', NUM_HAWKS)
+  console.log('NUM_DOVES', NUM_DOVES)
+  console.log('NUM_RESOURCES', NUM_RESOURCES)
+
+  stats.init({
     totals: {
       Dove: NUM_DOVES,
       Hawk: NUM_HAWKS
@@ -292,28 +322,81 @@ class NaturalSystem extends Component {
     super(props)
     this._container = React.createRef()
   }
+  // static getDerivedStateFromProps() {}
   componentDidMount() {
+    this._stopActiveSystem()
+    this._initNewSystem()
+  }
+  componentDidUpdate(prevProps) {
+    if (prevProps.type !== this.props.type) {
+      this._stopActiveSystem()
+      this._initNewSystem()
+    }
+  }
+  componentWillUnmount() {
+    this._stopActiveSystem()
+  }
+  _clearScene() {
+    if (this._scene) {
+      this._scene.remove.apply(this._scene, this._scene.children)
+    }
+  }
+  _stopActiveSystem() {
+    const { resultsCallback } = this.props
+    this.stopAnimation()
+    stats.clear()
+    resultsCallback(stats.stats)
+    // this._animationEngine = null
+    // this._controls = null
+    // this._cube = null
+    // this._group = null
+    // this._lightTarget = null
+    // this._scene = null
+    // this._renderer = null
+    // this._camera = null
+  }
+  _initNewSystem() {
     const {
       autoStartAnimation,
       height,
       resultsCallback,
+      type,
       width
     } = this.props
     if (this._container) {
       this._width = width
       this._height = height
 
-      huntersAndPrey({
-        height: height,
-        width: width,
-        resultsCallback: typeof resultsCallback === 'function' && resultsCallback
-      })
+      switch (type) {
+        case 'doves':
+          dovesOnly({
+            height: height,
+            width: width,
+            resultsCallback: typeof resultsCallback === 'function' && resultsCallback
+          })
+          break
+        case 'hawks':
+          hawksOnly({
+            height: height,
+            width: width,
+            resultsCallback: typeof resultsCallback === 'function' && resultsCallback
+          })
+          break
+        default:
+          huntersAndPrey({
+            height: height,
+            width: width,
+            resultsCallback: typeof resultsCallback === 'function' && resultsCallback
+          })
+      }
 
-      this._renderer = new WebGLRenderer({ antialias: true })
-      this._renderer.setPixelRatio(window.devicePixelRatio)
-      this._renderer.setClearColor(0x000000)
-      this._container.current.appendChild(this._renderer.domElement)
-
+      if (!this._renderer) {
+        this._renderer = new WebGLRenderer({ antialias: true })
+        this._renderer.setPixelRatio(window.devicePixelRatio)
+        this._renderer.setClearColor(0x000000)
+        this._container.current.appendChild(this._renderer.domElement)
+      }
+      this._clearScene()
       this._setupSceneAndCamera()
 
       this.resize({ width, height })
@@ -409,18 +492,21 @@ class NaturalSystem extends Component {
       lights.forEach(l => this._scene.add(new DirectionalLightHelper(l, 100, 0xFFFF00)))
     }
     /* Actual content of the scene */
-    const clouds = System.firstWorld().clouds
-    if (NUM_DOVES) {
-      this._scene.add(clouds.Dove)
-    }
-    if (NUM_RESOURCES) {
-      this._scene.add(clouds.Resource)
-    }
-    if (NUM_HAWKS) {
-      this._scene.add(clouds.Hawk)
+    if (System.firstWorld()) {
+      const clouds = System.firstWorld().clouds
+      if (NUM_DOVES) {
+        this._scene.add(clouds.Dove)
+      }
+      if (NUM_RESOURCES) {
+        this._scene.add(clouds.Resource)
+      }
+      if (NUM_HAWKS) {
+        this._scene.add(clouds.Hawk)
+      }
+
+      this._animationEngine = loop(this._renderScene)
     }
 
-    this._animationEngine = loop(this._renderScene)
   }
   _renderScene = dt => {
     // const { behaviour } = this.props
@@ -432,10 +518,15 @@ class NaturalSystem extends Component {
       }
     }
 
-    // do stuff here
-    this._controls.update()
-    this._camera.updateProjectionMatrix()
-    this._renderer.render(this._scene, this._camera)
+    if (this._controls) {
+      this._controls.update()
+    }
+    if (this._camera) {
+      this._camera.updateProjectionMatrix()
+    }
+    if (this._renderer) {
+      this._renderer.render(this._scene, this._camera)
+    }
   }
   reset() {
     System._resetSystem()
@@ -459,12 +550,14 @@ NaturalSystem.propTypes = {
   autoStartAnimation: PropTypes.bool,
   height: PropTypes.number.isRequired,
   resultsCallback: PropTypes.func,
+  type: PropTypes.string,
   width: PropTypes.number.isRequired
 }
 
 NaturalSystem.defaultProps = {
   autoStartAnimation: true,
-  resultsCallback: null
+  resultsCallback: null,
+  type: 'huntersAndPrey'
 }
 
 export default NaturalSystem

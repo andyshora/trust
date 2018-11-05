@@ -26,44 +26,51 @@ const COPY = {
       lines: ['Doves are passive, and don\'t like to fight.']
     },
     {
-      heading: 'Doves Cooperate',
+      heading: 'Dove Strategy: Share, don\'t fight.',
       lines: [
-        'They would rather forfeit resources to stronger opposition, and not risk losing cost C to gain resource G.',
-        'They\'ll happily take G if there is no cost C to lose, which only happens if they face no opposition or encounter another Dove.'
+        // 'They would rather forfeit resources to stronger opposition, and not risk losing cost C to gain resource G.',
+        // 'They\'ll happily take G if there is no cost C to lose, which only happens if they face no opposition or encounter another Dove.',
+        'Posture until the other withdraws.',
+        'Withdraw if the other escalates or seems too strong.'
       ]
     },
     {
-      heading: 'Dove: Pure Strategy',
+      heading: 'Dove v Dove',
       lines: [
-        'Posture until the other withdraws.',
-        'Withdraw if the other escalates or seems too strong'
+        'Doves don\'t fight. One Dove will win. Neither get hurt.',
+        'Average gain for each dove: G / 2'
       ]
     }
   ],
   Hawk: [
     {
       heading: 'The Hawk',
-      lines: ['Hawks are aggressive']
+      lines: ['Hawks are aggressive. They\'ll happily fight for food.']
     },
     {
-      heading: 'Hawk Fight',
+      heading: 'Hawk Strategy: Escalate, fight if necessary.',
       lines: [
-        'Hawks don\'t mind fighting for resources to gain G, even though they may lose and forfeit cost C, where G < C.',
-        'Note: the higher the cost C, the more dangerous the animal is.'
+        'Always escalate the conflict until either the other withdraws',
+        'If posturing fails, then fight.'
       ]
     },
     {
-      heading: 'Hawk: Pure Strategy',
+      heading: 'Hawk v Hawk',
       lines: [
         'Always escalate the conflict until either the other withdraws',
-        'If the opposition does not withdraw, you are badly hurt.'
+        'If the opposition does not withdraw, you are badly hurt.',
+        'Average gain for each hawk: G / 2',
+        'Average Cost to each Hawk: C / 2'
       ]
     }
   ],
   DoveHawk: [
     {
-      heading: 'Dove vs Hawk',
-      lines: ['Hawk takes all.']
+      heading: 'Hawk vs Dove',
+      lines: [
+        'Hawks escalate the conflict to win. Doves withdraw, empty-handed.',
+        'Average gain for each Hawk: G'
+      ]
     }
   ]
 }
@@ -76,7 +83,9 @@ const STAGES = [
   { type: 'intro', copyKey: 'Hawk', names: ['hawk'], stage: 4 },
   { type: 'intro', copyKey: 'Hawk', names: ['hawk', 'hawk'], stage: 5 },
   { type: 'intro', copyKey: 'DoveHawk', names: ['dove', 'hawk'], stage: 6 },
-  { type: 'system', stage: 7 }
+  { type: 'system', systemType: 'doves', stage: 7 },
+  { type: 'system', systemType: 'hawks', stage: 8 },
+  { type: 'system', systemType: 'huntersAndPrey', stage: 9 }
 ]
 
 class App extends Component {
@@ -87,7 +96,7 @@ class App extends Component {
     this._onResetTapped = this._onResetTapped.bind(this)
   }
   state = {
-    activeStage: STAGES[7],
+    activeStage: STAGES[0],
     prevStage: -1,
     stage: 0,
     systemResults: {}
@@ -101,7 +110,8 @@ class App extends Component {
     this.setState({
       activeStage: STAGES[stage + 1],
       stage: stage + 1,
-      prevStage: stage
+      prevStage: stage,
+      systemResults: {}
     })
   }
   @keydown('left')
@@ -113,7 +123,8 @@ class App extends Component {
     this.setState({
       activeStage: STAGES[stage - 1],
       stage: stage - 1,
-      prevStage: stage
+      prevStage: stage,
+      systemResults: {}
     })
   }
   _onResetTapped() {
@@ -134,6 +145,7 @@ class App extends Component {
       systemResults
     } = this.state
     const copy = COPY[activeStage.copyKey]
+    console.log('activeStage', activeStage)
     return (
       <AppWrapper>
         {activeStage.type === 'system'
@@ -146,7 +158,8 @@ class App extends Component {
                       height={height}
                       width={width}
                       resultsCallback={this._handleSystemResultsChange}
-                      ref={this.system} />
+                      ref={this.system}
+                      type={activeStage.systemType} />
                   )}
                 </ContainerDimensions>
               </SystemViz>
