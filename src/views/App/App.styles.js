@@ -15,9 +15,23 @@ export const SystemWrapper = styled.div`
   z-index: 1;
   background: black;
   display: grid;
-  grid-template-columns: 1fr 500px;
+  grid-template-columns: 1fr;
 `
-export const SystemSidebar = styled.aside`
+export const ResultsWrap = styled.ul`
+  padding: 1rem;
+  margin: 0;
+  width: 400px;
+
+  > li {
+    list-display-type: none;
+    padding: 1rem;
+    border-bottom: 1px dashed hotpink;
+
+    span {
+      display: inline-block;
+      margin-right: 2rem;
+    }
+  }
 `
 export const SystemViz = styled.div`
 `

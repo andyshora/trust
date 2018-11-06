@@ -59,16 +59,25 @@ Walker.prototype.init = function(world, opt_options) {
   this.perlinAccelHigh = typeof options.perlinAccelHigh === 'undefined' ? 0.075 : options.perlinAccelHigh
   this.perlinOffsetX = typeof options.perlinOffsetX === 'undefined' ? Math.random() * 10000 : options.perlinOffsetX
   this.perlinOffsetY = typeof options.perlinOffsetY === 'undefined' ? Math.random() * 10000 : options.perlinOffsetY
+  this.onDeath = typeof options.onDeath === 'function' ? options.onDeath : null
   this.color = options.color
   this.size = options.size
   this.opacity = typeof options.opacity === 'undefined' ? 1 : options.opacity
   this.sensors = options.sensors || []
+  this.dead = false
 
   this._randomVector = new Vector()
 
   // TODO: test this
   for (var i = 0, max = this.sensors.length; i < max; i++) {
     this.sensors[i].parent = this
+  }
+}
+
+Walker.prototype.die = function() {
+  if (typeof this.onDeath === 'function') {
+    this.dead = true
+    this.onDeath(this)
   }
 }
 

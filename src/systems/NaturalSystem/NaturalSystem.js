@@ -44,6 +44,7 @@ const DEBUG_LIGHTS = false
 
 let NUM_HAWKS = 10
 let NUM_DOVES = 50
+let NUM_BATS = 0
 let NUM_RESOURCES = 200
 let SENSOR_AGGRESSIVE = 100
 let SENSOR_EAT = 50
@@ -72,6 +73,9 @@ const payoffMatrix = actors => {
   let gains = [WIN_GAIN / 2, WIN_GAIN / 2]
   let costs = [0, 0]
   switch (str) {
+    case 'BatBat':
+      // todo - share
+      break
     case 'HawkHawk':
       // the early bird gets the worm
       costs = [FIGHT_COST / 2, FIGHT_COST / 2]
@@ -101,13 +105,22 @@ const payoffMatrix = actors => {
 }
 
 const _onConsume = (sensor, resource) => {
-  resource.newClaim(sensor.parent)
+  // resource.newClaim(sensor.parent)
+  resource.resourceClaimed(sensor.parent)
+}
+
+function _onDeath(walker) {
+  System.remove(walker, {
+    list: walker.world.bats,
+    cloudName: 'Bat'
+  })
 }
 
 function _onResourceWon(resource) {
   const numResources = resource.world.resources.length
   System.remove(resource, {
-    list: resource.world.resources
+    list: resource.world.resources,
+    cloudName: 'Resource'
   })
 
   // const availableResources = _.filter(resource.world.resources, r => !r.consumed)
@@ -126,18 +139,20 @@ function _onResourceWon(resource) {
       index: numResources + 1,
       isStatic: true,
       onResourceWon: _onResourceWon,
-      maxClaimTimer: 100,
+      maxClaimTimer: 1,
       executePayoffMatrix: payoffMatrix
     })
   }
 
   const doveLife = _.sumBy(System.firstWorld().walkers, w => w.life)
   const hawkLife = _.sumBy(System.firstWorld().agents, w => w.life)
+  const batLife = _.sumBy(System.firstWorld().bats, w => w.life)
   stats.setLifeTotals([
     { actor: 'Dove', value: doveLife / NUM_DOVES  },
-    { actor: 'Hawk', value: hawkLife / NUM_HAWKS  }
+    { actor: 'Hawk', value: hawkLife / NUM_HAWKS  },
+    { actor: 'Bat', value: batLife / NUM_BATS  }
   ])
-  resource.world.options.resultsCallback(stats.stats)
+  resource.world.options.resultsCallback({ bats: System.firstWorld().bats.map(b => ({ id: `Bat ${b.index}`, life: b.life })) })
 }
 
 function hawksOnly({ height, resultsCallback, width }) {
@@ -153,6 +168,16 @@ function dovesOnly({ height, resultsCallback, width }) {
   NUM_DOVES = 10
   NUM_RESOURCES = 10
   SENSOR_AGGRESSIVE = 300
+  setupWorld({ height, resultsCallback, width })
+}
+
+function bats({ height, resultsCallback, width }) {
+  NUM_HAWKS = 0
+  NUM_DOVES = 0
+  NUM_BATS = 5
+  NUM_RESOURCES = 5
+  SENSOR_AGGRESSIVE = 200
+  LIFE_TOTAL = 72
   setupWorld({ height, resultsCallback, width })
 }
 
@@ -172,7 +197,8 @@ function setupWorld({ height, resultsCallback, width }) {
   stats.init({
     totals: {
       Dove: NUM_DOVES,
-      Hawk: NUM_HAWKS
+      Hawk: NUM_HAWKS,
+      Bats: NUM_BATS
     },
     life: {
       fightCost: FIGHT_COST,
@@ -193,6 +219,11 @@ function setupWorld({ height, resultsCallback, width }) {
       gravity: new Flora.Vector(),
       c: 0,
       resultsCallback,
+      Bat: {
+        pointSize: 40,
+        color: 0xDD0000,
+        shape: 'disc'
+      },
       Hawk: {
         pointSize: 20,
         color: 0xFF0000,
@@ -204,9 +235,9 @@ function setupWorld({ height, resultsCallback, width }) {
         shape: 'disc'
       },
       Resource: {
-        pointSize: 50,
-        color: 0x00FF00,
-        shape: 'spark'
+        pointSize: 30,
+        color: 0xFF0000,
+        shape: 'disc'
       }
     })
 
@@ -218,16 +249,54 @@ function setupWorld({ height, resultsCallback, width }) {
       this.add('Resource', {
         name: 'Food',
         type: 'Food',
-        color: 0x00FF00,
+        color: 0xFF0000,
         size: 50,
         location,
         index: i,
         isStatic: true,
         onResourceWon: _onResourceWon,
-        maxClaimTimer: 100,
+        maxClaimTimer: 1,
         executePayoffMatrix: payoffMatrix
       })
     }
+
+    for (let i = 0; i < NUM_BATS; i++) {
+      const location = new Flora.Vector(
+        Flora.Utils.getRandomNumber(world.width * 0.1, world.width * 0.9),
+        Flora.Utils.getRandomNumber(world.height * 0.1, world.height * 0.9)
+      )
+      this.add('Walker', {
+        name: 'Bat',
+        type: 'Bat',
+        size: 20,
+        color: 0xFFFFFF,
+        life: LIFE_TOTAL,
+        location,
+        index: i,
+        // remainsOnScreen: true,
+        perlinSpeed: 0.001,
+        motorSpeed: 2,
+        minSpeed: 1,
+        maxSpeed: 3,
+        onDeath: _onDeath,
+        sensors: [
+          this.add('Sensor', {
+            type: 'Food',
+            targetType: 'Resource',
+            sensitivity: SENSOR_EAT,
+            behavior: 'EAT',
+            onConsume: _onConsume
+          }),
+          this.add('Sensor', {
+            type: 'Food',
+            targetType: 'Resource',
+            sensitivity: SENSOR_AGGRESSIVE,
+            behavior: 'AGGRESSIVE'
+          })
+        ]
+      })
+    }
+
     for (let i = 0; i < NUM_DOVES; i++) {
       const location = new Flora.Vector(
         Flora.Utils.getRandomNumber(world.width * 0.1, world.width * 0.9),
@@ -345,7 +414,7 @@ class NaturalSystem extends Component {
     const { resultsCallback } = this.props
     this.stopAnimation()
     stats.clear()
-    resultsCallback(stats.stats)
+    // resultsCallback(stats.stats)
     // this._animationEngine = null
     // this._controls = null
     // this._cube = null
@@ -382,6 +451,13 @@ class NaturalSystem extends Component {
             resultsCallback: typeof resultsCallback === 'function' && resultsCallback
           })
           break
+        case 'bats':
+          bats({
+            height: height,
+            width: width,
+            resultsCallback: typeof resultsCallback === 'function' && resultsCallback
+          })
+          break;
         default:
           huntersAndPrey({
             height: height,
@@ -494,6 +570,9 @@ class NaturalSystem extends Component {
     /* Actual content of the scene */
     if (System.firstWorld()) {
       const clouds = System.firstWorld().clouds
+      if (NUM_BATS) {
+        this._scene.add(clouds.Bat)
+      }
       if (NUM_DOVES) {
         this._scene.add(clouds.Dove)
       }

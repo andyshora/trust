@@ -50,14 +50,34 @@ Resource.prototype.init = function(world, opt_options) {
   this.pointToParentDirection = typeof options.pointToParentDirection === 'undefined' ? true : options.pointToParentDirection
   this.type = options.type
   this.offsetDistance = typeof options.offsetDistance === 'undefined' ? 0 : options.offsetDistance
-  this.onResourceWon =  typeof options.onResourceWon === 'function' ? options.onResourceWon : null
+  this.onResourceWon = typeof options.onResourceWon === 'function' ? options.onResourceWon : null
   this.offsetAngle = options.offsetAngle || 0
   this.executePayoffMatrix = typeof options.executePayoffMatrix === 'function' ? options.executePayoffMatrix : claims => claims[0]
   this.isStatic = !!options.isStatic
   this.claims = []
-  this.maxClaimTimer = options.maxClaimTimer ||200
+  this.maxClaimTimer = options.maxClaimTimer || 200
   this.claimTimer = 0
   this.consumed = false
+}
+
+Resource.prototype.updateHealthTotals = function(adjustments) {
+  console.log('updateHealthTotals', adjustments)
+
+  // add gains and costs
+  adjustments.forEach((a, i) => {
+    a.actor.life += a.adjustment
+    console.log(`${a.actor.id} gained ${a.adjustment}, new life total: ${a.actor.life}`)
+  })
+}
+
+Resource.prototype.resourceClaimed = function(actor) {
+  if (actor) {
+    this.consumed = true
+    this.updateHealthTotals([{ actor, adjustment: 48 }])
+    if (typeof this.onResourceWon === 'function') {
+      this.onResourceWon(this)
+    }
+  }
 }
 
 Resource.prototype.newClaim = function(newClaimer) {

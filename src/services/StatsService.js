@@ -1,22 +1,27 @@
 const _initialStats = {
   totalActors: {
+    Bat: 0,
     Dove: 0,
     Hawk: 0
   },
   avgLifeTotals: {
+    Bat: 0,
     Dove: 0,
     Hawk: 0
   },
   unchallenged: {
+    Bat: 0,
     Dove: 0,
     Hawk: 0
   },
   encounters: {
+    BatBat: 0,
     DoveDove: 0,
     DoveHawk: 0,
     HawkHawk: 0
   },
   wins: {
+    Bat: 0,
     Dove: 0,
     Hawk: 0
   },

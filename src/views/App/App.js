@@ -14,7 +14,7 @@ import '../../styles/generic'
 import {
   AppWrapper,
   NavWrapper,
-  SystemSidebar,
+  ResultsWrap,
   SystemViz,
   SystemWrapper
 } from './App.styles'
@@ -76,16 +76,8 @@ const COPY = {
 }
 
 const STAGES = [
-  { type: 'intro', copyKey: 'Dove', names: ['dove'], stage: 0 },
-  { type: 'intro', copyKey: 'Dove', names: ['dove'], stage: 1 },
-  { type: 'intro', copyKey: 'Dove', names: ['dove', 'dove'], stage: 2 },
-  { type: 'intro', copyKey: 'Hawk', names: ['hawk'], stage: 3 },
-  { type: 'intro', copyKey: 'Hawk', names: ['hawk'], stage: 4 },
-  { type: 'intro', copyKey: 'Hawk', names: ['hawk', 'hawk'], stage: 5 },
-  { type: 'intro', copyKey: 'DoveHawk', names: ['dove', 'hawk'], stage: 6 },
-  { type: 'system', systemType: 'doves', stage: 7 },
-  { type: 'system', systemType: 'hawks', stage: 8 },
-  { type: 'system', systemType: 'huntersAndPrey', stage: 9 }
+  { type: 'system', systemType: 'bats', stage: 0 },
+  { type: 'system', systemType: 'bats', stage: 1 }
 ]
 
 class App extends Component {
@@ -145,7 +137,6 @@ class App extends Component {
       systemResults
     } = this.state
     const copy = COPY[activeStage.copyKey]
-    console.log('activeStage', activeStage)
     return (
       <AppWrapper>
         {activeStage.type === 'system'
@@ -163,13 +154,9 @@ class App extends Component {
                   )}
                 </ContainerDimensions>
               </SystemViz>
-              <SystemSidebar>
-                <Results data={systemResults} />
-                <NavWrapper>
-                  <button onClick={this._onResetTapped}>Reset</button>
-                </NavWrapper>
-              </SystemSidebar>
-
+              <ResultsWrap>
+                {systemResults && systemResults.bats && systemResults.bats.sort((a, b) => a.life < b.life).map(b => <li key={b.id}><span>{b.id}</span><span>{b.life}</span></li>)}
+              </ResultsWrap>
             </SystemWrapper>
           )
           : <ContainerDimensions>

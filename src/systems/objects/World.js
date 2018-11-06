@@ -33,6 +33,11 @@ function World(opt_options) {
   this.options = options
 
   this.clouds = {
+    Bat: createPointCloud({
+      pointSize: options.Bat.pointSize,
+      color: options.Bat.color,
+      shape: options.Bat.shape
+    }),
     Hawk: createPointCloud({
       pointSize: options.Hawk.pointSize,
       color: options.Hawk.color,
@@ -91,6 +96,7 @@ World.prototype.init = function(world, opt_options) {
   this.agents = []
   this.resources = []
   this.walkers = []
+  this.bats = []
 }
 
 World.prototype.removeItem = function(item, data) {
@@ -100,12 +106,12 @@ World.prototype.removeItem = function(item, data) {
   if (data && data.list) {
     index = _.findIndex(data.list, i => i.id === itemToRemove.id)
     const item = data.list[index]
-    console.warn(`Resource ${item.id} consumed, and is no longer active in this world`)
+    console.warn(`Item ${item.id} is no longer active in this world`)
   }
 
   // remove vertex in point cloud
-  if (index !== -1 && item.name in this.clouds) {
-    const pointCloud = this.clouds[item.name]
+  if (index !== -1 && data.cloudName in this.clouds) {
+    const pointCloud = this.clouds[data.cloudName]
 
     // todo - do not change length of array buffer - super expensive
     // just hide the item
@@ -131,6 +137,16 @@ World.prototype.add = function(item) {
   //   return
   // }
   switch (item.type) {
+    case 'Bat':
+      this.bats.push(item)
+      addPoint({
+        index: item.index,
+        geometry: this.clouds.Bat.geometry,
+        color: item.color ? item.color : this.options.Bat.color,
+        size: item.size ? item.size : this.options.Bat.pointSize,
+        position: [item.location.x, item.location.y, 0]
+      })
+      break
     case 'Dove':
       this.walkers.push(item)
       // add a vertex to the cloud to represent Dove's position
@@ -179,12 +195,15 @@ World.prototype.add = function(item) {
   }
 }
 
+let t = 0
+
 /**
  * Applies forces to world.
  * @function step
  * @memberof World
  */
 World.prototype.step = function() {
+
   // update position of all vertices
   // const hawkPositions = this.clouds.Hawk.geometry.attributes.position.array;
   const updateFlags = {
@@ -192,6 +211,27 @@ World.prototype.step = function() {
     size: false,
     color: false
   }
+  // console.table(this.bats.map(b => ({ id: b.id, life: b.life })))
+  // debugger
+  for (let i = 0; i < this.bats.length; i++) {
+    if (this.bats[i].dead) {
+      continue
+    }
+    // life decay
+    if (t % 10 === 0) {
+      this.bats[i].life -= 1
+      if (this.bats[i].life <= 0) {
+        this.bats[i].die()
+      }
+    }
+    updatePoint({
+      index: i,
+      geometry: this.clouds.Bat.geometry,
+      position: [this.bats[i].location.x, this.bats[i].location.y, 0],
+      updateFlags
+    })
+  }
+  this.options.resultsCallback({ bats: this.bats.map(b => ({ id: `Bat ${b.index}`, life: b.life })) })
   for (let i = 0; i < this.agents.length; i++) {
     updatePoint({
       index: i,
@@ -229,12 +269,16 @@ World.prototype.step = function() {
     //   this.clouds.Dove.geometry.colors[i] = new Color(0xFF1111);
     //   this.clouds.Dove.geometry.colorsNeedUpdate = true;
     // }
+
   }
-  this.clouds.Hawk.geometry.attributes.position.needsUpdate = true
-  this.clouds.Dove.geometry.attributes.position.needsUpdate = true
+  this.clouds.Bat.geometry.attributes.position.needsUpdate = true
+  // this.clouds.Hawk.geometry.attributes.position.needsUpdate = true
+  // this.clouds.Dove.geometry.attributes.position.needsUpdate = true
   this.clouds.Resource.geometry.attributes.position.needsUpdate = true
 
   this.location.add(this._camera)
+
+  t++
 }
 
 export default World
