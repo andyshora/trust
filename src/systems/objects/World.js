@@ -205,6 +205,45 @@ World.prototype.add = function(item) {
 
 let t = 0
 
+World.prototype.clearContents = function() {
+
+  const updateFlags = {
+    position: true,
+    size: true,
+    color: true
+  }
+
+  for (let i = 0; i < this.bats.length; i++) {
+    updatePoint({
+      name: 'Bat',
+      color: 0x000000,
+      index: i,
+      geometry: this.clouds.Bat.geometry,
+      position: [0, 0, 0],
+      updateFlags
+    })
+  }
+
+  for (let i = 0; i < this.resources.length; i++) {
+    updatePoint({
+      name: 'Bat',
+      color: 0x000000,
+      index: i,
+      geometry: this.clouds.Resource.geometry,
+      position: [0, 0, 0],
+      updateFlags
+    })
+  }
+
+  this.bats = []
+  this.resources = []
+
+  this.clouds.Bat.geometry.attributes.position.needsUpdate = true
+  this.clouds.Bat.geometry.attributes.color.needsUpdate = true
+  this.clouds.Resource.geometry.attributes.position.needsUpdate = true
+  this.clouds.Resource.geometry.attributes.color.needsUpdate = true
+}
+
 /**
  * Applies forces to world.
  * @function step

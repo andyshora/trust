@@ -81,8 +81,9 @@ const COPY = {
 }
 
 const STAGES = [
-  { type: 'system', systemType: 'bats', stage: 0 },
-  { type: 'system', systemType: 'bats', stage: 1 }
+  { type: 'system', systemType: 'bats1', title: 'Free Roam', description: 'A single bat, with lots of blood to drink.', stage: 0 },
+  { type: 'system', systemType: 'bats2', title: 'Batte Royale', description: 'Every bat for themself.', stage: 1 },
+  { type: 'system', systemType: 'bats3', title: 'Cooperation', description: 'Let\'s work together.', stage: 2 }
 ]
 
 class App extends Component {
@@ -160,23 +161,27 @@ class App extends Component {
                 </ContainerDimensions>
               </SystemViz>
               <ResultsWrap>
+                <h2>{activeStage.title}</h2>
+                <p>{activeStage.description}</p>
                 <ResultsTable>
                   <thead>
                     <tr>
                       <td>ID</td>
                       <td>Health</td>
-                      <td>Sent</td>
-                      <td>Recd</td>
+                      {activeStage.stage > 1 && <td>Sent</td>}
+                      {activeStage.stage > 1 && <td>Recd</td>}
                     </tr>
                   </thead>
-                  {systemResults && systemResults.bats && systemResults.bats.sort((a, b) => b.life - a.life).map(b => (
-                    <ResultsTableRow key={b.id} active={!!b.life}>
-                      <td>{b.id}</td>
-                      <td><HealthSwatch health={b.life / 120} />{b.life}</td>
-                      <SentCell opacity={Math.min(b.sent / 3, 1)}><span>{b.sent}</span></SentCell>
-                      <ReceivedCell opacity={Math.min(b.received / 3, 1)}><span>{b.received}</span></ReceivedCell>
-                    </ResultsTableRow>
-                  ))}
+                  <tbody>
+                    {systemResults && systemResults.bats && systemResults.bats.sort((a, b) => b.life - a.life).map(b => (
+                      <ResultsTableRow key={b.id} active={!!b.life}>
+                        <td>{b.id}</td>
+                        <td><HealthSwatch health={b.life / 120} />{b.life}</td>
+                        {activeStage.stage > 1 && <SentCell opacity={Math.min(b.sent / 3, 1)}><span>{b.sent}</span></SentCell>}
+                        {activeStage.stage > 1 && <ReceivedCell opacity={Math.min(b.received / 3, 1)}><span>{b.received}</span></ReceivedCell>}
+                      </ResultsTableRow>
+                    ))}
+                  </tbody>
                 </ResultsTable>
               </ResultsWrap>
             </SystemWrapper>

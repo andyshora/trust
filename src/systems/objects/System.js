@@ -190,6 +190,9 @@ System._cleanObj = function(obj) {
  */
 System.remove = function (obj, data) {
   var i, max, records = System._records
+  if (!obj) {
+    return
+  }
 
   for (i = 0, max = records.length; i < max; i++) {
     if (records[i].id === obj.id) {

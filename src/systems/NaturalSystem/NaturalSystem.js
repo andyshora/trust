@@ -54,8 +54,8 @@ let WIN_GAIN = 8
 let LIFE_TOTAL = 100
 let CAMERA_FOLLOWS_HAWK = false
 let RESOURCES_REGENERATE = true
-
-const COOPERATE = true
+let COOPERATE = false
+let world = null
 
 // let foodEaten = 0
 // let fightCount = 0
@@ -239,18 +239,6 @@ function dovesOnly({ height, resultsCallback, width }) {
   setupWorld({ height, resultsCallback, width })
 }
 
-function bats({ height, resultsCallback, width }) {
-  NUM_HAWKS = 0
-  NUM_DOVES = 0
-  NUM_BATS = 20
-  NUM_RESOURCES = 3
-  SENSOR_AGGRESSIVE = 300
-  SENSOR_EAT = 10
-  SENSOR_BEG = 50
-  LIFE_TOTAL = 72
-  setupWorld({ height, resultsCallback, width })
-}
-
 function huntersAndPrey({ height, resultsCallback, width }) {
   NUM_HAWKS = 50
   NUM_DOVES = 10
@@ -259,10 +247,166 @@ function huntersAndPrey({ height, resultsCallback, width }) {
   setupWorld({ height, resultsCallback, width })
 }
 
+let _resources = []
+let _sensors = []
+let _bats = []
+
+function addWorldContents() {
+  for (let i = 0; i < NUM_RESOURCES; i++) {
+    const location = new Flora.Vector(
+      Flora.Utils.getRandomNumber(world.width * 0.1, world.width * 0.9),
+      Flora.Utils.getRandomNumber(world.height * 0.1, world.height * 0.9)
+    )
+    _resources.push(System.add('Resource', {
+      name: 'Food',
+      type: 'Food',
+      color: 0xFF0000,
+      size: 100,
+      location,
+      index: i,
+      isStatic: true,
+      onResourceWon: _onResourceWon,
+      maxClaimTimer: 1,
+      executePayoffMatrix: payoffMatrix
+    }, world))
+  }
+
+  for (let i = 0; i < NUM_BATS; i++) {
+    const location = new Flora.Vector(
+      Flora.Utils.getRandomNumber(world.width * 0.1, world.width * 0.9),
+      Flora.Utils.getRandomNumber(world.height * 0.1, world.height * 0.9)
+    )
+
+    const sensors = [
+      System.add('Sensor', {
+        type: 'Food',
+        targetType: 'Resource',
+        sensitivity: SENSOR_EAT,
+        behavior: 'EAT',
+        onConsume: _onConsume
+      }),
+      System.add('Sensor', {
+        type: 'Food',
+        targetType: 'Resource',
+        sensitivity: SENSOR_AGGRESSIVE,
+        behavior: 'AGGRESSIVE'
+      })
+    ]
+
+    if (COOPERATE) {
+      sensors.push(System.add('Sensor', {
+        type: 'Bat',
+        targetType: 'Walker',
+        sensitivity: SENSOR_BEG,
+        behavior: 'KISS',
+        onKiss: _onKiss
+      }))
+    }
+
+    _sensors.push(sensors)
+
+    _bats.push(System.add('Walker', {
+      name: 'Bat',
+      type: 'Bat',
+      size: 20,
+      color: 0xFFFFFF,
+      life: LIFE_TOTAL,
+      location,
+      index: i,
+      // remainsOnScreen: true,
+      perlinSpeed: 0.001,
+      motorSpeed: 2,
+      minSpeed: 1,
+      maxSpeed: 4,
+      onDeath: _onDeath,
+      sensors
+    }))
+  }
+
+  for (let i = 0; i < NUM_DOVES; i++) {
+    const location = new Flora.Vector(
+      Flora.Utils.getRandomNumber(world.width * 0.1, world.width * 0.9),
+      Flora.Utils.getRandomNumber(world.height * 0.1, world.height * 0.9)
+    )
+    System.add('Walker', {
+      name: 'Dove',
+      type: 'Dove',
+      size: 20,
+      color: 0xFFFFFF,
+      life: LIFE_TOTAL,
+      location,
+      index: i,
+      // remainsOnScreen: true,
+      perlinSpeed: 0.001,
+      motorSpeed: 2,
+      minSpeed: 1,
+      maxSpeed: 3,
+      sensors: [
+        System.add('Sensor', {
+          type: 'Food',
+          targetType: 'Resource',
+          sensitivity: SENSOR_EAT,
+          behavior: 'EAT',
+          onConsume: _onConsume
+        }),
+        System.add('Sensor', {
+          type: 'Food',
+          targetType: 'Resource',
+          sensitivity: SENSOR_AGGRESSIVE,
+          behavior: 'AGGRESSIVE'
+        })
+      ]
+    })
+  }
+
+  for (var i = 0; i < NUM_HAWKS; i++) {
+    const location = new Flora.Vector(
+      Flora.Utils.getRandomNumber(world.width * 0.1, world.width * 0.9),
+      Flora.Utils.getRandomNumber(world.height * 0.1, world.height * 0.9)
+    )
+    const controlCamera = CAMERA_FOLLOWS_HAWK && !i
+    System.add('Walker', {
+      name: 'Hawk',
+      type: 'Hawk',
+      size: 100,
+      color: 0xFF0000,
+      life: LIFE_TOTAL,
+      location,
+      index: i,
+      motorSpeed: 2,
+      minSpeed: 1,
+      maxSpeed: 5,
+      controlCamera,
+      // flocking: true,
+      sensors: [
+        System.add('Sensor', {
+          type: 'Food',
+          targetType: 'Resource',
+          sensitivity: SENSOR_EAT,
+          behavior: 'EAT',
+          onConsume: _onConsume
+        }),
+        System.add('Sensor', {
+          type: 'Food',
+          targetType: 'Resource',
+          sensitivity: SENSOR_AGGRESSIVE,
+          behavior: 'AGGRESSIVE'
+        })
+      ]
+    })
+  }
+}
+
 function setupWorld({ height, resultsCallback, width }) {
   console.log('NUM_HAWKS', NUM_HAWKS)
   console.log('NUM_DOVES', NUM_DOVES)
   console.log('NUM_RESOURCES', NUM_RESOURCES)
+
+  // if (world) {
+  //   System.remove(System.firstWorld())
+  //   return
+  //   // world = null
+  // }
 
   stats.init({
     totals: {
@@ -283,7 +427,7 @@ function setupWorld({ height, resultsCallback, width }) {
       Sensor: Sensor,
       Walker: Walker
     }
-    const world = this.add('World', {
+    world = this.add('World', {
       width,
       height,
       gravity: new Flora.Vector(),
@@ -310,147 +454,6 @@ function setupWorld({ height, resultsCallback, width }) {
         shape: 'spark'
       }
     })
-
-    for (let i = 0; i < NUM_RESOURCES; i++) {
-      const location = new Flora.Vector(
-        Flora.Utils.getRandomNumber(world.width * 0.1, world.width * 0.9),
-        Flora.Utils.getRandomNumber(world.height * 0.1, world.height * 0.9)
-      )
-      this.add('Resource', {
-        name: 'Food',
-        type: 'Food',
-        color: 0xFF0000,
-        size: 100,
-        location,
-        index: i,
-        isStatic: true,
-        onResourceWon: _onResourceWon,
-        maxClaimTimer: 1,
-        executePayoffMatrix: payoffMatrix
-      })
-    }
-
-    for (let i = 0; i < NUM_BATS; i++) {
-      const location = new Flora.Vector(
-        Flora.Utils.getRandomNumber(world.width * 0.1, world.width * 0.9),
-        Flora.Utils.getRandomNumber(world.height * 0.1, world.height * 0.9)
-      )
-
-      const sensors = [
-        this.add('Sensor', {
-          type: 'Food',
-          targetType: 'Resource',
-          sensitivity: SENSOR_EAT,
-          behavior: 'EAT',
-          onConsume: _onConsume
-        }),
-        this.add('Sensor', {
-          type: 'Food',
-          targetType: 'Resource',
-          sensitivity: SENSOR_AGGRESSIVE,
-          behavior: 'AGGRESSIVE'
-        })
-      ]
-
-      if (COOPERATE) {
-        sensors.push(this.add('Sensor', {
-          type: 'Bat',
-          targetType: 'Walker',
-          sensitivity: SENSOR_BEG,
-          behavior: 'KISS',
-          onKiss: _onKiss
-        }))
-      }
-      this.add('Walker', {
-        name: 'Bat',
-        type: 'Bat',
-        size: 20,
-        color: 0xFFFFFF,
-        life: LIFE_TOTAL,
-        location,
-        index: i,
-        // remainsOnScreen: true,
-        perlinSpeed: 0.01,
-        motorSpeed: 2,
-        minSpeed: 1,
-        maxSpeed: 4,
-        onDeath: _onDeath,
-        sensors
-      })
-    }
-
-    for (let i = 0; i < NUM_DOVES; i++) {
-      const location = new Flora.Vector(
-        Flora.Utils.getRandomNumber(world.width * 0.1, world.width * 0.9),
-        Flora.Utils.getRandomNumber(world.height * 0.1, world.height * 0.9)
-      )
-      this.add('Walker', {
-        name: 'Dove',
-        type: 'Dove',
-        size: 20,
-        color: 0xFFFFFF,
-        life: LIFE_TOTAL,
-        location,
-        index: i,
-        // remainsOnScreen: true,
-        perlinSpeed: 0.001,
-        motorSpeed: 2,
-        minSpeed: 1,
-        maxSpeed: 3,
-        sensors: [
-          this.add('Sensor', {
-            type: 'Food',
-            targetType: 'Resource',
-            sensitivity: SENSOR_EAT,
-            behavior: 'EAT',
-            onConsume: _onConsume
-          }),
-          this.add('Sensor', {
-            type: 'Food',
-            targetType: 'Resource',
-            sensitivity: SENSOR_AGGRESSIVE,
-            behavior: 'AGGRESSIVE'
-          })
-        ]
-      })
-    }
-
-    for (var i = 0; i < NUM_HAWKS; i++) {
-      const location = new Flora.Vector(
-        Flora.Utils.getRandomNumber(world.width * 0.1, world.width * 0.9),
-        Flora.Utils.getRandomNumber(world.height * 0.1, world.height * 0.9)
-      )
-      const controlCamera = CAMERA_FOLLOWS_HAWK && !i
-      this.add('Walker', {
-        name: 'Hawk',
-        type: 'Hawk',
-        size: 100,
-        color: 0xFF0000,
-        life: LIFE_TOTAL,
-        location,
-        index: i,
-        motorSpeed: 2,
-        minSpeed: 1,
-        maxSpeed: 5,
-        controlCamera,
-        // flocking: true,
-        sensors: [
-          this.add('Sensor', {
-            type: 'Food',
-            targetType: 'Resource',
-            sensitivity: SENSOR_EAT,
-            behavior: 'EAT',
-            onConsume: _onConsume
-          }),
-          this.add('Sensor', {
-            type: 'Food',
-            targetType: 'Resource',
-            sensitivity: SENSOR_AGGRESSIVE,
-            behavior: 'AGGRESSIVE'
-          })
-        ]
-      })
-    }
 
     this._toggleFPS()
   })
@@ -487,15 +490,37 @@ class NaturalSystem extends Component {
   componentWillUnmount() {
     this._stopActiveSystem()
   }
+  _removeWorldContents() {
+    _resources.forEach(r => {
+      System.remove(r)
+    })
+
+    _sensors.forEach(r => {
+      System.remove(r)
+    })
+
+    _bats.forEach(r => {
+      System.remove(r)
+    })
+
+    System.firstWorld().clearContents()
+
+    // this._clearScene()
+  }
   _clearScene() {
     if (this._scene) {
       this._scene.remove.apply(this._scene, this._scene.children)
     }
   }
   _stopActiveSystem() {
-    const { resultsCallback } = this.props
+    console.warn('_stopActiveSystem')
+    // const { resultsCallback } = this.props
     this.stopAnimation()
     stats.clear()
+
+    // if (System.firstWorld()) {
+    //   System._resetSystem()
+    // }
     // resultsCallback(stats.stats)
     // this._animationEngine = null
     // this._controls = null
@@ -533,13 +558,51 @@ class NaturalSystem extends Component {
             resultsCallback: typeof resultsCallback === 'function' && resultsCallback
           })
           break
-        case 'bats':
-          bats({
-            height: height,
-            width: width,
-            resultsCallback: typeof resultsCallback === 'function' && resultsCallback
-          })
-          break;
+        case 'bats1':
+          NUM_HAWKS = 0
+          NUM_DOVES = 0
+          NUM_BATS = 1
+          NUM_RESOURCES = 3
+          SENSOR_AGGRESSIVE = 500
+          SENSOR_EAT = 10
+          SENSOR_BEG = 50
+          LIFE_TOTAL = 72
+          COOPERATE = false
+          if (!System.firstWorld()) {
+            setupWorld({
+              height,
+              resultsCallback: typeof resultsCallback === 'function' && resultsCallback,
+              width
+            })
+          }
+          this._removeWorldContents()
+          addWorldContents()
+          break
+        case 'bats2':
+          NUM_HAWKS = 0
+          NUM_DOVES = 0
+          NUM_BATS = 2
+          NUM_RESOURCES = 4
+          SENSOR_AGGRESSIVE = 300
+          SENSOR_EAT = 10
+          SENSOR_BEG = 50
+          LIFE_TOTAL = 72
+          COOPERATE = true
+          this._removeWorldContents()
+          addWorldContents()
+          break
+        case 'bats3':
+          NUM_HAWKS = 0
+          NUM_DOVES = 0
+          NUM_BATS = 20
+          NUM_RESOURCES = 3
+          SENSOR_AGGRESSIVE = 300
+          SENSOR_EAT = 10
+          SENSOR_BEG = 50
+          LIFE_TOTAL = 72
+          this._removeWorldContents()
+          addWorldContents()
+          break
         default:
           huntersAndPrey({
             height: height,
@@ -553,9 +616,40 @@ class NaturalSystem extends Component {
         this._renderer.setPixelRatio(window.devicePixelRatio)
         this._renderer.setClearColor(0x000000)
         this._container.current.appendChild(this._renderer.domElement)
+        this._setupSceneAndCamera()
+      } else {
+        // this._clearScene()
       }
-      this._clearScene()
-      this._setupSceneAndCamera()
+
+      const firstWorld = System.firstWorld()
+      console.warn('firstWorld', firstWorld)
+
+      /* Actual content of the scene */
+      if (firstWorld) {
+        const clouds = System.firstWorld().clouds
+
+        if (NUM_BATS) {
+          this._scene.add(clouds.Bat)
+        }
+        if (NUM_DOVES) {
+          this._scene.add(clouds.Dove)
+        }
+        if (NUM_RESOURCES) {
+          this._scene.add(clouds.Resource)
+        }
+        if (NUM_HAWKS) {
+          this._scene.add(clouds.Hawk)
+        }
+
+        if (this._animationEngine) {
+          this.startAnimation()
+        } else {
+          this._animationEngine = loop(this._renderScene)
+
+        }
+      } else {
+        console.error('No world')
+      }
 
       this.resize({ width, height })
 
@@ -565,6 +659,7 @@ class NaturalSystem extends Component {
     }
   }
   startAnimation() {
+    console.log('startAnimation')
     if (this._animationEngine
       && !this._animationEngine.running
       && this._container.current) {
@@ -649,25 +744,6 @@ class NaturalSystem extends Component {
     if (DEBUG_LIGHTS) {
       lights.forEach(l => this._scene.add(new DirectionalLightHelper(l, 100, 0xFFFF00)))
     }
-    /* Actual content of the scene */
-    if (System.firstWorld()) {
-      const clouds = System.firstWorld().clouds
-      if (NUM_BATS) {
-        this._scene.add(clouds.Bat)
-      }
-      if (NUM_DOVES) {
-        this._scene.add(clouds.Dove)
-      }
-      if (NUM_RESOURCES) {
-        this._scene.add(clouds.Resource)
-      }
-      if (NUM_HAWKS) {
-        this._scene.add(clouds.Hawk)
-      }
-
-      this._animationEngine = loop(this._renderScene)
-    }
-
   }
   _renderScene = dt => {
     // const { behaviour } = this.props
