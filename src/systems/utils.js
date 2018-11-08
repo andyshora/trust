@@ -5,10 +5,7 @@ import {
   Float32BufferAttribute,
   Points,
   ShaderMaterial,
-  Math,
-  TextureLoader,
-  Vector3,
-  VertexColors
+  TextureLoader
 } from 'three'
 
 import _ from 'lodash'
@@ -69,6 +66,7 @@ export const createPointCloud = ({
 }
 
 export const addPoint = ({
+  name,
   index = -1,
   geometry,
   color = 0x000000,
@@ -96,11 +94,13 @@ export const addPoint = ({
   geometry.attributes.color.array[(index * 3) + 1] = c.g
   geometry.attributes.color.array[(index * 3) + 2] = c.b
 
+
   geometry.attributes.position.needsUpdate = true
   geometry.attributes.color.needsUpdate = true
 }
 
 export const updatePoint = ({
+  name,
   index = -1,
   geometry,
   color,
@@ -130,6 +130,8 @@ export const updatePoint = ({
     geometry.attributes.color.array[(index * 3)] = c.r
     geometry.attributes.color.array[(index * 3) + 1] = c.g
     geometry.attributes.color.array[(index * 3) + 2] = c.b
+
+    console.log(`${name} aaa Updating indexes ${(index * 3)}-${(index * 3) + 2}`)
     if (updateFlags && updateFlags.color) {
       geometry.attributes.color.needsUpdate = true
     }

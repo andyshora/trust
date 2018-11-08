@@ -1,11 +1,6 @@
 import _ from 'lodash'
 
 import {
-  Color,
-  Vector3
-} from 'three'
-
-import {
   addPoint,
   createPointCloud,
   updatePoint
@@ -81,7 +76,7 @@ World.prototype.init = function(world, opt_options) {
 
   var options = opt_options || {}
 
-  this.color = options.color || [0, 0, 0]
+  this.color = options.color || [200, 200, 200]
   this.width = options.width || this.el.scrollWidth
   this.height = options.height || this.el.scrollHeight
   this.location = options.location || new Vector(0, 0)
@@ -105,13 +100,16 @@ World.prototype.removeItem = function(item, data) {
 
   if (data && data.list) {
     index = _.findIndex(data.list, i => i.id === itemToRemove.id)
-    const item = data.list[index]
-    console.warn(`Item ${item.id} is no longer active in this world`)
+    // const item = data.list[index]
+    // console.warn(`Item ${item.id} is no longer active in this world`)
   }
 
   // remove vertex in point cloud
   if (index !== -1 && data.cloudName in this.clouds) {
     const pointCloud = this.clouds[data.cloudName]
+
+    // if (!pointCloud.geometry.attributes.color.array[(index * 3)]) {
+    // }
 
     // todo - do not change length of array buffer - super expensive
     // just hide the item
@@ -122,6 +120,8 @@ World.prototype.removeItem = function(item, data) {
     pointCloud.geometry.attributes.position.array[(index * 3)] = 0
     pointCloud.geometry.attributes.position.array[(index * 3) + 1] = 0
     pointCloud.geometry.attributes.position.array[(index * 3) + 2] = 0
+
+    // todo: resources aren't disappearing, when color.array[(index * 3)]) is going from 0 -> 0
 
     pointCloud.geometry.attributes.position.needsUpdate = true
     pointCloud.geometry.attributes.color.needsUpdate = true
@@ -138,14 +138,18 @@ World.prototype.add = function(item) {
   // }
   switch (item.type) {
     case 'Bat':
-      this.bats.push(item)
-      addPoint({
-        index: item.index,
-        geometry: this.clouds.Bat.geometry,
-        color: item.color ? item.color : this.options.Bat.color,
-        size: item.size ? item.size : this.options.Bat.pointSize,
-        position: [item.location.x, item.location.y, 0]
-      })
+      // check the item is not a sensor belonging to the Bat
+      if (item.name === 'Walker') {
+        this.bats.push(item)
+        addPoint({
+          name: 'Bat',
+          index: item.index,
+          geometry: this.clouds.Bat.geometry,
+          color: item.color ? item.color : this.options.Bat.color,
+          size: item.size ? item.size : this.options.Bat.pointSize,
+          position: [item.location.x, item.location.y, 0]
+        })
+      }
       break
     case 'Dove':
       this.walkers.push(item)
@@ -153,6 +157,7 @@ World.prototype.add = function(item) {
       // this.clouds.Dove.geometry.vertices.push(new Vector3(item.location.x, item.location.y, 0));
       // this.clouds.Dove.geometry.colors.push(new Color(0xFFFFFF));
       addPoint({
+        name: 'Dove',
         index: item.index,
         geometry: this.clouds.Dove.geometry,
         color: item.color ? item.color : this.options.Dove.color,
@@ -166,7 +171,9 @@ World.prototype.add = function(item) {
         // add a vertex to the cloud to represent Dove's position
         // this.clouds.Resource.geometry.vertices.push(new Vector3(item.location.x, item.location.y, 0));
         // this.clouds.Resource.geometry.colors.push(new Color(0x00FF33));
+        // console.log(`Adding new resource: item.index ${item.index}`)
         addPoint({
+          name: 'Resource',
           index: item.index,
           geometry: this.clouds.Resource.geometry,
           color: item.color ? item.color : this.options.Resource.color,
@@ -183,6 +190,7 @@ World.prototype.add = function(item) {
       // this.clouds.Hawk.geometry.vertices.push(new Vector3(item.location.x, item.location.y, 0));
       // this.clouds.Hawk.geometry.colors.push(new Color(0xFF0000));
       addPoint({
+        name: 'Hawk',
         index: item.index,
         geometry: this.clouds.Hawk.geometry,
         color: item.color ? item.color : this.options.Hawk.color,
@@ -207,9 +215,9 @@ World.prototype.step = function() {
   // update position of all vertices
   // const hawkPositions = this.clouds.Hawk.geometry.attributes.position.array;
   const updateFlags = {
-    position: false,
-    size: false,
-    color: false
+    position: true,
+    size: true,
+    color: true
   }
   // console.table(this.bats.map(b => ({ id: b.id, life: b.life })))
   // debugger
@@ -218,22 +226,30 @@ World.prototype.step = function() {
       continue
     }
     // life decay
-    if (t % 10 === 0) {
+    if (t % 5 === 0) {
       this.bats[i].life -= 1
       if (this.bats[i].life <= 0) {
         this.bats[i].die()
       }
     }
     updatePoint({
+      name: 'Bat',
       index: i,
       geometry: this.clouds.Bat.geometry,
       position: [this.bats[i].location.x, this.bats[i].location.y, 0],
       updateFlags
     })
   }
-  this.options.resultsCallback({ bats: this.bats.map(b => ({ id: `Bat ${b.index}`, life: b.life })) })
+  this.options.resultsCallback({ bats: this.bats.map(b => ({
+    id: `Bat ${b.index}`,
+    life: b.life,
+    collisions: b.collisions.length,
+    sent: b.sent.length,
+    received: b.received.length
+  })) })
   for (let i = 0; i < this.agents.length; i++) {
     updatePoint({
+      name: 'Hawk',
       index: i,
       geometry: this.clouds.Hawk.geometry,
       position: [this.agents[i].location.x, this.agents[i].location.y, 0],
@@ -254,6 +270,7 @@ World.prototype.step = function() {
   // update position of all vertices
   for (let i = 0; i < this.walkers.length; i++) {
     updatePoint({
+      name: 'Dove',
       index: i,
       geometry: this.clouds.Dove.geometry,
       position: [this.walkers[i].location.x, this.walkers[i].location.y, 0],
@@ -275,6 +292,7 @@ World.prototype.step = function() {
   // this.clouds.Hawk.geometry.attributes.position.needsUpdate = true
   // this.clouds.Dove.geometry.attributes.position.needsUpdate = true
   this.clouds.Resource.geometry.attributes.position.needsUpdate = true
+  this.clouds.Resource.geometry.attributes.color.needsUpdate = true
 
   this.location.add(this._camera)
 

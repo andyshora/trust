@@ -61,7 +61,9 @@ Sensor.prototype.init = function(world, opt_options) {
   this.borderStyle = options.borderStyle || 'solid'
   this.borderColor = options.borderColor || [255, 255, 255]
   this.onConsume = options.onConsume || null
+  this.onKiss = options.onKiss || null
   this.onDestroy = options.onDestroy || null
+  this.onCollide = options.onCollide || null
   this.rangeDisplayBorderStyle = options.rangeDisplayBorderStyle || false
   this.rangeDisplayBorderDefaultColor = options.rangeDisplayBorderDefaultColor || false
   this.parent = options.parent || null
@@ -163,20 +165,69 @@ Sensor.prototype.step = function() {
   this.afterStep.call(this)
 }
 
+function hasRecentlyCollided(collisions, id) {
+  if (!collisions.length) {
+    return
+  }
+  const t = +new Date()
+  const recentCollisionsWithId = collisions.filter(c => c.id === id && Math.abs(t - c.time) < 5000)
 
+  if (recentCollisionsWithId && recentCollisionsWithId.length) {
+    const arr = recentCollisionsWithId.map(c => Math.abs(t - c.time))
+    // console.log(arr)
+    // debugger
+  }
+  return recentCollisionsWithId.length
+}
 
 Sensor.prototype.getBehavior = function() {
 
-  var i, iMax, j, jMax
-
   switch (this.behavior) {
+    case 'KISS':
+      return function(sensor, target) {
+        /**
+         * KISS
+         * If inside the target, objects kiss.
+         * Otherwise seek target if near
+         */
+        const collisionTolerance = 1
+        const recentlyCollided = hasRecentlyCollided(sensor.parent.collisions, target.id)
+        if (CollisionUtils.isInside(sensor.parent, target, collisionTolerance) && !recentlyCollided) {
+          // console.log('COLLISION', sensor.parent.id, target.id)
+          const t = +new Date()
+
+          // store kiss record on both kissers
+          sensor.parent.collisions.push({
+            time: t,
+            id: target.id
+          })
+
+          target.collisions.push({
+            time: t,
+            id: sensor.parent.id
+          })
+
+          if (sensor.onKiss) {
+            // target.consumed = true
+            sensor.onKiss(sensor, target)
+          }
+        } else if (!recentlyCollided) {
+          // desiredVelocity = difference in target location and agent location
+          let desiredVelocity = Vector.VectorSub(target.location, this.location)
+
+          // limit to the maxSteeringForce
+          desiredVelocity.limit(this.maxSteeringForce * 0.5)
+
+          return desiredVelocity
+        }
+      }
     case 'EAT':
       return function(sensor, target) {
         /**
          * CONSUME
          * If inside the target, target shrinks.
          */
-        const collisionTolerance = 1
+        const collisionTolerance = 2
 
         if (CollisionUtils.isInside(sensor.parent, target, collisionTolerance)) {
 
@@ -190,7 +241,6 @@ Sensor.prototype.getBehavior = function() {
             // target.consumed = true
             sensor.onConsume(sensor, target)
           }
-          return
         }
       }
 
@@ -484,6 +534,7 @@ Sensor.prototype.getBehavior = function() {
         this._force.y = this.velocity.y
         return this._force.mult(-0.25)
       }
+    default: break
   }
 
 }

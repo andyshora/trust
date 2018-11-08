@@ -65,6 +65,9 @@ Walker.prototype.init = function(world, opt_options) {
   this.opacity = typeof options.opacity === 'undefined' ? 1 : options.opacity
   this.sensors = options.sensors || []
   this.dead = false
+  this.collisions = []
+  this.sent = []
+  this.received = []
 
   this._randomVector = new Vector()
 
@@ -79,6 +82,14 @@ Walker.prototype.die = function() {
     this.dead = true
     this.onDeath(this)
   }
+}
+
+Walker.prototype.sentDonation = function(id, amount) {
+  this.sent.push({ id, amount })
+}
+
+Walker.prototype.receivedDonation = function(id, amount) {
+  this.received.push({ id, amount })
 }
 
 /**

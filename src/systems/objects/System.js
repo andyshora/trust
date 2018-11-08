@@ -378,7 +378,6 @@ System.getAllItemsByName = function(name, opt_list) {
  * @returns {Array} An array of items.
  */
 System.getAllItemsByAttribute = function(attr, opt_val, opt_name) { // TODO: add test
-  // console.log(attr, opt_val);
   const matches = opt_name
     ? this._records.filter(r => r.type === opt_val && r.name === opt_name)
     : this._records.filter(r => r.type === opt_val)

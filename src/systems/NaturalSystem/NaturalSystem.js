@@ -48,12 +48,14 @@ let NUM_BATS = 0
 let NUM_RESOURCES = 200
 let SENSOR_AGGRESSIVE = 100
 let SENSOR_EAT = 50
+let SENSOR_BEG = 200
 let FIGHT_COST = 20
 let WIN_GAIN = 8
 let LIFE_TOTAL = 100
 let CAMERA_FOLLOWS_HAWK = false
-
 let RESOURCES_REGENERATE = true
+
+const COOPERATE = true
 
 // let foodEaten = 0
 // let fightCount = 0
@@ -74,6 +76,7 @@ const payoffMatrix = actors => {
   let costs = [0, 0]
   switch (str) {
     case 'BatBat':
+      console.log('BatBat')
       // todo - share
       break
     case 'HawkHawk':
@@ -104,12 +107,69 @@ const payoffMatrix = actors => {
   }
 }
 
-const _onConsume = (sensor, resource) => {
+function _onConsume(sensor, resource) {
   // resource.newClaim(sensor.parent)
+  // check if bat is actually hungry
+  if (sensor.parent.life > 200) {
+    return
+  }
   resource.resourceClaimed(sensor.parent)
 }
 
+
+function _onKiss(sensor, target) {
+
+  if (sensor.parent.dead || target.dead) {
+    return
+  }
+
+  // both bats can last another day
+  if (sensor.parent.life > 48 && target.life > 48) {
+    return
+  }
+
+  if (sensor.parent.life === target.life) {
+    return
+  }
+
+  if (sensor.parent.life < 48 && target.life < 48) {
+    // both are hungry, equal out
+    // sensor.parent.life = ~~((sensor.parent.life + target.life) / 2)
+    return
+  }
+
+  console.log(`DONATION. Previous life: ${sensor.parent.life}, ${target.life}`)
+  audio.play('button', { volume: 1 })
+
+  let donation = 0
+  if (sensor.parent.life > target.life) {
+    donation = ~~(sensor.parent.life * 0.25)
+    // todo - take into account if the donor has previosuly been saved by the recipient
+
+    sensor.parent.life -= donation
+    target.life += donation
+
+    sensor.parent.sentDonation(target.id, donation)
+    target.receivedDonation(sensor.parent.id, donation)
+  } else if (sensor.parent.life < target.life) {
+    donation = ~~(target.life * 0.25)
+    // todo - take into account if the donor has previosuly been saved by the recipient
+
+    target.life -= donation
+    sensor.parent.life += donation
+
+    sensor.parent.receivedDonation(target.id, donation)
+    target.sentDonation(sensor.parent.id, donation)
+  }
+
+
+  // console.log('onKiss', sensor.parent, target)
+  console.log('donation', donation)
+  console.log(`New life: ${sensor.parent.life}, ${target.life}`)
+}
+
 function _onDeath(walker) {
+  audio.play('click', { volume: 5 })
   System.remove(walker, {
     list: walker.world.bats,
     cloudName: 'Bat'
@@ -118,6 +178,7 @@ function _onDeath(walker) {
 
 function _onResourceWon(resource) {
   const numResources = resource.world.resources.length
+  // audio.play('button', { volume: 1 })
   System.remove(resource, {
     list: resource.world.resources,
     cloudName: 'Resource'
@@ -131,12 +192,13 @@ function _onResourceWon(resource) {
     Flora.Utils.getRandomNumber(resource.world.height * 0.1, resource.world.height * 0.9)
   )
 
+  // add a new resource when one is removed
   if (RESOURCES_REGENERATE) {
     System.add('Resource', {
       name: 'Food',
       type: 'Food',
       location,
-      index: numResources + 1,
+      index: numResources,
       isStatic: true,
       onResourceWon: _onResourceWon,
       maxClaimTimer: 1,
@@ -152,7 +214,13 @@ function _onResourceWon(resource) {
     { actor: 'Hawk', value: hawkLife / NUM_HAWKS  },
     { actor: 'Bat', value: batLife / NUM_BATS  }
   ])
-  resource.world.options.resultsCallback({ bats: System.firstWorld().bats.map(b => ({ id: `Bat ${b.index}`, life: b.life })) })
+  resource.world.options.resultsCallback({ bats: System.firstWorld().bats.map(b => ({
+    id: `Bat ${b.index}`,
+    life: b.life,
+    collisions: b.collisions.length,
+    sent: b.sent.length,
+    received: b.received.length
+  })) })
 }
 
 function hawksOnly({ height, resultsCallback, width }) {
@@ -174,9 +242,11 @@ function dovesOnly({ height, resultsCallback, width }) {
 function bats({ height, resultsCallback, width }) {
   NUM_HAWKS = 0
   NUM_DOVES = 0
-  NUM_BATS = 5
-  NUM_RESOURCES = 5
-  SENSOR_AGGRESSIVE = 200
+  NUM_BATS = 20
+  NUM_RESOURCES = 3
+  SENSOR_AGGRESSIVE = 300
+  SENSOR_EAT = 10
+  SENSOR_BEG = 50
   LIFE_TOTAL = 72
   setupWorld({ height, resultsCallback, width })
 }
@@ -235,9 +305,9 @@ function setupWorld({ height, resultsCallback, width }) {
         shape: 'disc'
       },
       Resource: {
-        pointSize: 30,
+        pointSize: 100,
         color: 0xFF0000,
-        shape: 'disc'
+        shape: 'spark'
       }
     })
 
@@ -250,7 +320,7 @@ function setupWorld({ height, resultsCallback, width }) {
         name: 'Food',
         type: 'Food',
         color: 0xFF0000,
-        size: 50,
+        size: 100,
         location,
         index: i,
         isStatic: true,
@@ -265,6 +335,32 @@ function setupWorld({ height, resultsCallback, width }) {
         Flora.Utils.getRandomNumber(world.width * 0.1, world.width * 0.9),
         Flora.Utils.getRandomNumber(world.height * 0.1, world.height * 0.9)
       )
+
+      const sensors = [
+        this.add('Sensor', {
+          type: 'Food',
+          targetType: 'Resource',
+          sensitivity: SENSOR_EAT,
+          behavior: 'EAT',
+          onConsume: _onConsume
+        }),
+        this.add('Sensor', {
+          type: 'Food',
+          targetType: 'Resource',
+          sensitivity: SENSOR_AGGRESSIVE,
+          behavior: 'AGGRESSIVE'
+        })
+      ]
+
+      if (COOPERATE) {
+        sensors.push(this.add('Sensor', {
+          type: 'Bat',
+          targetType: 'Walker',
+          sensitivity: SENSOR_BEG,
+          behavior: 'KISS',
+          onKiss: _onKiss
+        }))
+      }
       this.add('Walker', {
         name: 'Bat',
         type: 'Bat',
@@ -274,26 +370,12 @@ function setupWorld({ height, resultsCallback, width }) {
         location,
         index: i,
         // remainsOnScreen: true,
-        perlinSpeed: 0.001,
+        perlinSpeed: 0.01,
         motorSpeed: 2,
         minSpeed: 1,
-        maxSpeed: 3,
+        maxSpeed: 4,
         onDeath: _onDeath,
-        sensors: [
-          this.add('Sensor', {
-            type: 'Food',
-            targetType: 'Resource',
-            sensitivity: SENSOR_EAT,
-            behavior: 'EAT',
-            onConsume: _onConsume
-          }),
-          this.add('Sensor', {
-            type: 'Food',
-            targetType: 'Resource',
-            sensitivity: SENSOR_AGGRESSIVE,
-            behavior: 'AGGRESSIVE'
-          })
-        ]
+        sensors
       })
     }
 

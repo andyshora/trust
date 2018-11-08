@@ -12,11 +12,16 @@ import NaturalSystem from '../../systems/NaturalSystem'
 // Styles
 import '../../styles/generic'
 import {
+  ResultsTable,
+  ResultsTableRow,
+  ReceivedCell,
+  SentCell,
   AppWrapper,
   NavWrapper,
   ResultsWrap,
   SystemViz,
-  SystemWrapper
+  SystemWrapper,
+  HealthSwatch
 } from './App.styles'
 
 const COPY = {
@@ -155,7 +160,24 @@ class App extends Component {
                 </ContainerDimensions>
               </SystemViz>
               <ResultsWrap>
-                {systemResults && systemResults.bats && systemResults.bats.sort((a, b) => a.life < b.life).map(b => <li key={b.id}><span>{b.id}</span><span>{b.life}</span></li>)}
+                <ResultsTable>
+                  <thead>
+                    <tr>
+                      <td>ID</td>
+                      <td>Health</td>
+                      <td>Sent</td>
+                      <td>Recd</td>
+                    </tr>
+                  </thead>
+                  {systemResults && systemResults.bats && systemResults.bats.sort((a, b) => b.life - a.life).map(b => (
+                    <ResultsTableRow key={b.id} active={!!b.life}>
+                      <td>{b.id}</td>
+                      <td><HealthSwatch health={b.life / 120} />{b.life}</td>
+                      <SentCell opacity={Math.min(b.sent / 3, 1)}><span>{b.sent}</span></SentCell>
+                      <ReceivedCell opacity={Math.min(b.received / 3, 1)}><span>{b.received}</span></ReceivedCell>
+                    </ResultsTableRow>
+                  ))}
+                </ResultsTable>
               </ResultsWrap>
             </SystemWrapper>
           )

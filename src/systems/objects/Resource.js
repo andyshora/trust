@@ -61,17 +61,15 @@ Resource.prototype.init = function(world, opt_options) {
 }
 
 Resource.prototype.updateHealthTotals = function(adjustments) {
-  console.log('updateHealthTotals', adjustments)
-
   // add gains and costs
   adjustments.forEach((a, i) => {
-    a.actor.life += a.adjustment
-    console.log(`${a.actor.id} gained ${a.adjustment}, new life total: ${a.actor.life}`)
+    a.actor.life = a.actor.life + a.adjustment // Math.min(a.actor.life + a.adjustment, 200)
+    // console.log(`${a.actor.id} gained ${a.adjustment}, new life total: ${a.actor.life}`)
   })
 }
 
 Resource.prototype.resourceClaimed = function(actor) {
-  if (actor) {
+  if (actor && !this.consumed) {
     this.consumed = true
     this.updateHealthTotals([{ actor, adjustment: 48 }])
     if (typeof this.onResourceWon === 'function') {
@@ -122,23 +120,23 @@ Resource.prototype.updateLifeTotals = function({ actors, costs, gains }) {
   })
 }
 
-Resource.prototype.step = function() {
-  var i, max, x = this.location.x,
-    y = this.location.y
-
-  this.beforeStep.call(this)
-
-  // do stuff - check collisions, etc
-  if (this.claimTimer) {
-    this.claimTimer--
-    // console.log('claimTimer', this.claimTimer)
-  }
-
-  if (!this.claimTimer && this.claims.length) {
-    this.fightToDetermineWinner(this.claims)
-  }
-
-  this.afterStep.call(this)
-}
+// Resource.prototype.step = function() {
+//   // var i, max, x = this.location.x,
+//   //   y = this.location.y
+//
+//   this.beforeStep.call(this)
+//
+//   // do stuff - check collisions, etc
+//   // if (this.claimTimer) {
+//   //   this.claimTimer--
+//     // console.log('claimTimer', this.claimTimer)
+//   // }
+//
+//   if (!this.claimTimer && this.claims.length) {
+//     this.fightToDetermineWinner(this.claims)
+//   }
+//
+//   this.afterStep.call(this)
+// }
 
 export default Resource
